@@ -1,0 +1,47 @@
+<!doctype html>
+<head>
+    <title>ICD browser</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='typeaheadjs.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='jquery-1.11.1.min.js') }}"></script>
+    {% block loads %}{% endblock %}
+    <script type="text/javascript" src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='jquery.tablesorter.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='jquery.tablesorter.pager.js') }}"></script>
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='theme.default.css') }}"> <!--tablesorter's css-->
+    <script type="text/javascript" src="{{ url_for('static', filename='underscore-min.js') }}"></script>
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='bootstrap.min.css') }}">
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+    <script type="text/javascript" src="http://d3js.org/d3.v4.js"> </script>
+    <script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='index.js') }}"></script>
+
+
+</head>
+<body>
+
+<nav class="navbar navbar-default" role="navigation" style="background: #222;">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle pull-right" href="/" data-toggle="collapse" data-target="#navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" style="font-size:20px; color:#ffffff; font-weight:bold;"> ICD explorer</a>
+            <div class="col-xs-5" id="navbar_form_container">
+                <form action="/awesome" class="navbar-form" role="search">
+                    <div class="form-group" id="navbar-awesomebar">
+                        <input type="submit" style="display: none;"/>
+                        <input id="navbar-searchbox-input" name="query" class="form-control awesomebar" type="text" placeholder="ICD code"/>
+                        <input type="submit" style="position: absolute; left: -9999px"/>
+                    </div>
+                </form>
+            </div>
+        </div>
+     </div><!-- /.container-fluid -->
+</nav>
+</div>
+{% block body %}{% endblock %}
+</body>

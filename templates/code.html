@@ -1,0 +1,561 @@
+{% extends "layout.html" %}
+{% block body %}
+
+
+<script type="text/javascript">
+
+
+
+chart_margin = {top: 20, right: 20, bottom: 70, left: 40},
+    hist_chart_width = 800 - chart_margin.left - chart_margin.right,
+    hist_chart_height = 300 - chart_margin.top - chart_margin.bottom;
+
+function hist_chart(data) {
+
+    console.log(data)
+
+    var selector = 'all'
+    var metric='all'
+    
+
+    var x = d3.scaleBand()
+        .rangeRound([0, hist_chart_width])
+        .padding(0.1)
+        .domain(data[metric].map(function(d) { return d.code; }));
+
+    var y = d3.scaleLinear()
+        .range([hist_chart_height, 0])
+        .domain([0, d3.max(data[metric], function(d) { return d.RR; })]);
+
+    var tip = d3.tip()
+        .attr('class', 'd3-tip')
+        .html(function(d) { return d.pval; });
+
+    var xAxis = d3.axisBottom(x);
+
+    var yAxis = d3.axisLeft(y);
+
+    console.log(data[metric].map(function(d) { return y(d.RR); }))
+
+    var svg = d3.select('#svg_hist_chart')
+        .attr("width", hist_chart_width)
+        .attr("height", hist_chart_height)
+        .append("g")
+        .attr('id', 'inner_graph')
+        .attr("transform", "translate(" + chart_margin.left + "," + chart_margin.top + ")");
+
+    svg.call(tip);
+
+    svg.selectAll("bar")
+        .data(data[metric])
+        .enter()
+        .append("rect")
+        .attr("class", "hist_bar")
+        .attr("x", function(d) { return x(d.code); })
+        .attr("y", function(d) { return y(d.RR); })
+        .attr("width", x.bandwidth())
+        .attr("height", function(d) { return (hist_chart_height - y(d.RR)); })
+        .on('mouseover', tip.show)
+        .on('mouseout', tip.hide)
+
+    svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + hist_chart_height + ")")
+        .call(xAxis);
+    
+    svg.append("g")
+        .attr("class", "y axis")
+        .call(yAxis);
+
+}
+
+
+function change_hist_chart(data, metric, container) {
+
+    // if (data[metric].length > 0)
+    // {
+
+        console.log(data[metric])
+
+        var x = d3.scaleBand()
+            .rangeRound([0, hist_chart_width])
+            .padding(0.1)
+            .domain(data[metric].map(function(d) { return d.code; }));
+
+        var y = d3.scaleLinear()
+            .range([hist_chart_height, 0])
+            .domain([0, d3.max(data[metric], function(d) { return d.RR; })]);
+
+
+        var svg = d3.select(container).select('#inner_graph');
+
+        //console.log(data[metric].map(function(d) { return y(d.RR); }))
+
+        svg.selectAll("rect")
+            .data(data[metric])
+            .transition()
+            .duration(500)
+            .attr("x", function(d) { 
+                if (data[metric].length > 0) {
+                    return x(d.code);
+                }
+                else {
+                    return 0;
+                }
+            })
+            .attr("y", function(d) { 
+                if (data[metric].length > 0) {
+                    return y(d.RR); 
+                }
+                else {
+                    return 0; 
+                }
+            })
+            .attr("width", x.bandwidth())
+            .attr("height", function(d) { return hist_chart_height - y(d.RR); });
+
+        var yAxis = d3.axisLeft(y);
+
+        svg.select(".y.axis")
+            .transition()
+            .duration(200)
+            .call(yAxis);
+
+        var xAxis = d3.axisBottom(x);
+
+        svg.select(".x.axis")
+            .transition()
+            .duration(200)
+            .call(xAxis);
+    // }
+    // else
+    // {
+    //     return 'help'
+    // }
+      
+}
+
+
+
+
+
+
+
+
+//     x.domain(data.map(function(d) { return d.code; }));
+//     y.domain([0, d3.max(data, function(d) { return d.RR; })]);
+
+//         console.log(data.map(function(d) {return d.RR;}))
+//       //console.log(data.map(function(d) {return height-y(d.fraction);}))
+//       //console.log(data.map(function(d) {return d.fraction;}))
+//       //console.log(data.map(function(d) {return x(d.code);}))
+
+//     g.append("g")
+//       .attr("class", "axis axis--x")
+//       .attr("transform", "translate(0," + height + ")")
+//       .call(d3.axisBottom(x))
+//     .selectAll("text")    
+//         .style("text-anchor", "end")
+//         .attr("dx", "-.8em")
+//         .attr("dy", ".15em")
+//         .attr("transform", "rotate(-65)");
+
+//      g.append("g")
+//       .attr("class", "axis axis--y")
+//       .call(d3.axisLeft(y))
+//     .append("text")
+//       .attr("transform", "rotate(-90)")
+//       .attr("y", 6)
+//       .attr("dy", "0.71em")
+//       .attr("text-anchor", "end")
+//       .text("Frequency");
+
+//     g.selectAll(".bar")
+//     .data(data)
+//     .enter().append("rect")
+//       .attr("class", "bar")
+//       .attr("x", function(d) { return x(d.code); })
+//       .attr("y", function(d) { return y(d.RR); })
+//       .attr("width", x.bandwidth())
+//       .attr("height", function(d) { return (height - y(d.RR)); })
+//       .on("mouseover", function(d) {
+//        div.transition()
+//          .duration(200)
+//          .style("opacity", .9);
+//        div.html("<span style='color:red'>" + d.pval + "</span>")
+//          .style("left", (d3.event.pageX) + "px")
+//          .style("top", (d3.event.pageY - 28) + "px");
+//        })
+//      .on("mouseout", function(d) {
+//        div.transition()
+//          .duration(500)
+//          .style("opacity", 0);
+//        });
+// }
+
+
+
+
+
+
+function time_chart(data) {
+
+
+
+    var svg = d3.select('#svg_time_chart'),
+        margin = {top: 20, right: 20, bottom: 70, left: 40},
+        width = 800 - margin.left - margin.right,
+        height = 300 - margin.top - margin.bottom;
+
+
+    var parseTime = d3.timeParse("%Y");
+
+    //console.log(data)
+
+    var x = d3.scaleTime().range([0, width]);
+    var y = d3.scaleLinear().range([height, 0]);
+
+
+    var valueline = d3.line()
+         .x(function(d) { return x(d.year); })
+         .y(function(d) { return y(d.count); });
+
+
+
+    var g = svg.append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+      data.map(function(d) {
+      d.year = parseTime(d.year)
+      d.count = +d.count
+     });
+
+
+      x.domain(d3.extent(data, function(d) { return d.year; }));
+      y.domain([0, d3.max(data, function(d) { return d.count; })]);
+
+
+    g.append("path")
+      .datum(data)
+      .attr("fill", "none")
+      .attr("stroke", "steelblue")
+      .attr("stroke-linejoin", "round")
+      .attr("stroke-linecap", "round")
+      .attr("stroke-width", 1.5)
+      .attr("d", valueline);
+
+
+    g.append("g")
+      .attr("class", "axis axis--x")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(x))
+    .selectAll("text")    
+        .style("text-anchor", "end")
+        .attr("dx", "-.8em")
+        .attr("dy", ".15em")
+        .attr("transform", "rotate(-65)");
+
+     g.append("g")
+      .attr("class", "axis axis--y")
+      .call(d3.axisLeft(y))
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", "0.71em")
+      .attr("text-anchor", "end")
+      .text("Count");
+
+
+}
+
+
+
+
+function map_chart() {
+
+
+     var svg = d3.select('#svg_map_chart'),
+        margin = {top: 20, right: 20, bottom: 70, left: 40},
+        width = 300 - margin.left - margin.right,
+        height = 600 - margin.top - margin.bottom;
+
+
+    var color=d3.scaleQuantize()
+    .range(["rgb(237,248,233)","rgb(186,228,179)","rgb(116,196,118)","rgb(49,163,84)","rgb(0,109,44)"])
+    .domain([0,100]);
+
+
+
+    var projection = d3.geoMercator()
+      //.scale((1 << 22) / 2 / Math.PI)
+      .scale(1000)
+      .translate([width / 2, height / 2])
+      .center([24.408320099999997,64.8130752])
+      //.translate([50, 700])
+
+
+    var path = d3.geoPath()
+      .projection(projection);
+
+    var g = svg.append("g")
+
+    var div2 = d3.select("body").append("div2")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
+
+    d3.json("/static/finland.geojson", function(err, geojson) {
+
+        d3.csv("/static/kuntavakiluku.csv",
+        function(data){
+            color.domain([d3.min(data,function(d){return d.Vakiluku;}),d3.max(data,function(d){return d.Vakiluku;})]);
+
+            for(var i=0;i<data.length;i++){
+                var dataState=data[i].Kunta;var dataValue=parseInt(data[i].Vakiluku);
+                for(var j=0;j<geojson.features.length;j++){var jsonState=geojson.features[j].properties.text;
+                    if(dataState==jsonState){geojson.features[j].properties.value=dataValue;break;}}}
+
+            var features = geojson.features;
+
+              // Draw each province as a path
+            g.selectAll("path")
+                  .data(features)
+                  .enter().append('path')
+                  .attr('d', path)
+                  .style("stroke","rgb(0,109,44)")
+                  .style('fill', setNormalColor)
+                  .on("mouseover",function(d){
+                    d3.select(this)
+                       .style("fill", "orange");
+                    div2.transition()
+                        .duration(200)
+                         .style("opacity", 1);
+                    div2.html("<span style='color:red'>" + d.properties.text + ": " + d.properties.value + "</span>")
+                         .style("left", (d3.event.pageX) + "px")
+                         .style("top", (d3.event.pageY - 28) + "px");
+                   })
+                  .on("mouseout", function(d) {
+                   div2.transition()
+                     .duration(500)
+                     .style("opacity", setNormalColor(d));
+                   d3.select(this)
+                     .style("fill", setNormalColor(d));   
+                   });
+
+        });      
+    });
+
+
+var setNormalColor=function(d){var value=d.properties.value;if(value){return color(value);}else{return"red";}};
+
+
+}
+
+
+
+
+$(document).ready(function() {
+
+        window.hist_comorb={{ hist_comorb|tojson|safe }};
+        window.count_date={{ count_date|tojson|safe }};
+        hist_chart(window.hist_comorb)
+        time_chart(window.count_date)
+        map_chart()
+
+        $('.hist_buttons').change(function () {
+        var v = $(this).attr('id');
+        if (window.hist_comorb[v].length == 0)
+        {
+            $('#gene_plot').hide();
+            $('#not_covered').show()
+        }
+
+
+
+        change_hist_chart(window.hist_comorb,v,'#svg_hist_chart');
+    });
+});
+
+
+
+
+</script>
+
+
+
+<div class="container-fluid">
+
+    <div class="col-md-10 col-xs-offset-1 col-md-offset-1">
+        <h1>ICD code: {{ code }} - {{ label }} </h1>
+        <hr/>
+    </div>
+
+    <div class="row">
+
+        <div class="col-md-10 col-xs-10 col-xs-offset-1 col-md-offset-1">
+            <dl class="dl-horizontal">
+                <dt>N. individuals with {{ code }} from 1998:</dt>
+                <dd>{{ number_id }}</dd>
+                <dt>N. individuals with {{ code }} in the last year:</dt>
+                <dd>{{ number_id }}</dd>
+                <dt >Prevalence in the last year:</dt>
+                <dd>{{ prevalence }}</dd>
+            </dl>
+        </div>
+
+    </div>
+
+    <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+            <h3>Risk Ratio Summary</h3>
+
+            <div class="row">
+                <span class="hidden-xs">
+
+                    <label for="hist_buttons">
+                        Dispaly:
+                    </label>
+
+                    <span class="btn-group" data-toggle="buttons" id="hist_buttons">
+
+                        <button class="btn btn-primary active hist_buttons"
+                              id="all" data-tooltip="All comorbidities">
+                          <input type="radio">All</input>
+                        </button>
+
+                        <button class="btn btn-primary hist_buttons"
+                              id="before" data-tooltip="Only events at least one week before {{ code }}">
+                          <input type="radio">Before</input>
+                        </button>
+
+                        <button class="btn btn-primary hist_buttons"
+                              id="after" data-tooltip="Only events at least one week after {{ code }}">
+                          <input type="radio">After</input>
+                        </button>
+
+                    </span>
+                </span>
+
+                <span style="float:right;">
+
+                    <label for="rr_buttons">
+                        Risk ratio:
+                    </label>
+
+                    <span class="btn-group" data-toggle="buttons" id="rr_buttons">
+
+                        <button class="btn btn-primary active rr_buttons"
+                              id="all" data-tooltip="Show only codes with RR > 1">
+                          <input type="radio">RR < 1</input>
+                        </button>
+
+                        <button class="btn btn-primary rr_buttons"
+                              id="before" data-tooltip="Show only codes with RR < 1">
+                          <input type="radio">RR > 1</input>
+                        </button>
+
+                    </span>
+                </span>    
+                <br>
+                <span style="overflow-x: scroll; display: inline-block">
+                    <svg style="width: 800; height:300" class="hidden-xs" id="svg_hist_chart"/>
+                </span>
+            </div> 
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+            <h3>Time trend</h3>
+            <span style="overflow-x: scroll; display: inline-block">
+                <svg style="width: 800; height:300" class="hidden-xs" id="svg_time_chart"/>
+            </span>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+            <h3>Map</h3>
+            <span style="overflow-x: scroll; display: inline-block; width: 691.667px;">
+                <svg style="width: 300; height:600" class="hidden-xs" id="svg_map_chart"/>
+            </span>
+        </div>
+    </div>
+</div>
+<!-- 
+<div class="container-fluid">
+    <div class="col-md-10 col-xs-offset-0 col-md-offset-0">
+        <div>
+            <style>
+
+            .hist_bar {
+              fill: orange;
+            }
+
+            .hist_bar:hover {
+              fill: orangeRed;
+            }
+
+
+            div.tooltip {
+                position:absolute;width:40px;
+                height:auto;padding:10px;
+                background-color:white;
+                -webkit-border-radius:10px;
+                -moz-border-radius:10px;
+                border-radius:10px;
+                -webkit-box-shadow:4px 4px 10px rgba(0,0,0,0.4);
+                -moz-box-shadow:4px 4px 10px rgba(0,0,0,0.4);
+                box-shadow:4px 4px 10px rgba(0,0,0,0.4);
+                pointer-events:none;}
+
+
+            </style>
+
+            <svg id="svg_hist_chart" style="width: 800px; height:300px" />
+        </div>
+    </div>
+    <hr/>
+</div>
+<div class="container-fluid">
+    <div class="col-md-10 col-xs-offset-0 col-md-offset-0">
+        <div>
+            <svg id="svg_time_chart" style="width: 800px; height:300px" />
+        </div>
+    </div>
+    <hr/>
+</div>
+<div class="container-fluid">
+    <div class="col-md-10 col-xs-offset-0 col-md-offset-0">
+        <div>
+            <style> 
+
+/*            .path {
+              fill: orange;
+            }*/
+
+           .path:hover
+            {fill: orangeRed;
+            }
+
+            div2.tooltip {
+                position:absolute;width:100px;
+                height:auto;padding:10px;
+                background-color:white;
+                -webkit-border-radius:10px;
+                -moz-border-radius:10px;
+                border-radius:10px;
+                -webkit-box-shadow:4px 4px 10px rgba(0,0,0,0.4);
+                -moz-box-shadow:4px 4px 10px rgba(0,0,0,0.4);
+                box-shadow:4px 4px 10px rgba(0,0,0,0.4);
+                pointer-events:none;}
+
+            </style>
+
+    
+            <svg id="svg_map_chart" style="width: 300px; height:600px" />
+        </div>
+    </div>
+</div>
+</div> -->
+
+{% endblock %}

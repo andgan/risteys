@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+{% block body %}
+    <div class="container">
+        <br><br>
+        <center>
+        <h2>Error</h2>
+        <h4>No ICD code found</h4><br>
+        <img class="error_image" src="{{ url_for('static', filename='images/exac_404_ripped_page.jpg') }}" />
+        <br><br>
+        </center>
+    </div>
+
+{% endblock %}

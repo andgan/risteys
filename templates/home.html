@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+{% block body %}
+    <script>
+        $('#navbar_form_container').hide();
+    </script>
+    <div class="container">
+        <h1 id="home-title"> ICD searching tool </h1>
+        <div class="row">
+            <div class="col-md-12">
+                <div id="home-searchbox">
+                    <form action="/awesome">
+                        <input type="submit" style="display: none;"/>
+                        <input id="home-searchbox-input" name="query" class="form-control input-lg awesomebar" type="text" placeholder="Search for an ICD code"/>
+                        <input type="submit" style="position: absolute; left: -9999px"/>
+                    </form>
+                    <p class="text-muted">
+                        Example - Code: <a href="/awesome?query=R19">R19</a>
+                    </p>
+                    <p class="text-muted">
+                        The total number of individuals in the dataset is: {{number_all_indiv}}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

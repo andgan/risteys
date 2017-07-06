@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+{% block body %}
+    <div class="container">
+        <br><br>
+        <center>
+        <h2>Error</h2>
+        <h4>Too few events to make a reliable report</h4><br>
+        <img class="error_image" src="{{ url_for('static', filename='images/small.jpg') }}" />
+        <br><br>
+        </center>
+    </div>
+
+{% endblock %}
