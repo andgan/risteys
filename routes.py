@@ -9,7 +9,8 @@ from collections import Counter
 import itertools
 import math
 import scipy.stats as stats
-
+import pandas
+import numpy
 
 app = Flask(__name__)      
 CORS(app)
@@ -17,94 +18,41 @@ app.config['COMPRESS_DEBUG'] = True
 cache = SimpleCache()
 
 
-MONGO_HOST = os.getenv('MONGO_HOST', 'localhost')
-MONGO_PORT = os.getenv('MONGO_PORT', 27017)
-MONGO_URL = 'mongodb://%s:%s' % (MONGO_HOST, MONGO_PORT)
+
+### READ DATA IN ####
+otherinfo = '/Users/andreaganna/flaskapp/app/data/otherinfo.csv'
+incidence = '/Users/andreaganna/flaskapp/app/data/incidence_prop_year.csv'
+res_mod = '/Users/andreaganna/flaskapp/app/data/RES_MOD.csv'
 
 
 
-app.config.update(dict(
-    DB_HOST='localhost',
-    DB_PORT=27017,
-    DB_NAME='risteys',
-    DEBUG=True
-))
+otherinfoD = pandas.io.parsers.read_csv(otherinfo, header=None,names=['code','n_events','prevalence'])
+incidenceD = pandas.io.parsers.read_csv(incidence, header=None,names=['code','year','incidence'])
+res_modD = pandas.io.parsers.read_csv(res_mod, header=None,names=['code','time','comorbidevent','RR','se','pval','count_a','count_b','count_c','count_d','ratio_comorb','ratio_nocomorb','irr'])
 
 
+def process_otherinfo(code,otherinfoD=otherinfoD):
+	otherinfoD2 = otherinfoD.query('code == "%s"' % code)[['n_events','prevalence']]
+	otherinfoD2[['prevalence']] = numpy.round(otherinfoD2[['prevalence']]*100)
+	return(otherinfoD2.to_dict(orient='records'))
 
-def connect_db():
-    """
-    Connects to the specific database.
-    """
+def process_incidence(code,incidenceD=incidenceD):
+	incidenceD2 = incidenceD.query('code == "%s"' % code)[['year','incidence']]
+	incidenceD2[['incidence']] = incidenceD2[['incidence']]*100
+	return(incidenceD2.sort_values(by='year').to_dict(orient='records'))
 
-    client = MongoClient(MONGO_URL)
-    return client[app.config['DB_NAME']]
-
-def get_db():
-    """
-    Opens a new database connection if there is none yet for the
-    current application context.
-    """
-    if not hasattr(g, 'db_conn'):
-        g.db_conn = connect_db()
-    return g.db_conn
-
-
-
-
-# db.individuals.drop()
-
-# cur=db.individuals.find()
-
-# for r in cur:
-# 	print(r)
-
-
-def validate_date(date):
-    try:
-        datev = datetime.datetime.strptime(date, '%Y-%m-%d')
-    except ValueError:
-        raise ValueError("Incorrect data format, should be YYYY-MM-DD")
-    return datev
-
-def load_codes_in_db(dict_value):
-	#db = get_db()
-	db.individuals.insert_one(dict_value)
-
-
-def get_codes_from_file_in_db(file,dict_map):
-	registry=open(file,"r")
-	header=registry.readline().split("\t")
-	id_num=header.index("eid")
-	icd10_num=header.index("diag_icd10")
-	date_num=header.index("epistart")
-	first_line=registry.readline().split("\t")
-	current_id=first_line[id_num]
-	icd10_first=first_line[icd10_num][0:3]
-	date_first=validate_date(first_line[date_num])
-	dict={'code':[icd10_first],'date':[date_first]}
-	for i,line in enumerate(registry):
-		cols=line.split("\t")
-		id=cols[id_num]
-		icd10=cols[icd10_num][0:3]
-		if not icd10 or not cols[date_num]:
-			continue
-		try:
-			val=dict_map[icd10]
-		except KeyError:
-			continue
-		if id == current_id:
-			dict['code'].append(icd10)
-			dict['date'].append(validate_date(cols[date_num]))
-		else:
-			entry={'id': current_id,'code': dict['code'], 'date': dict['date']}
-			load_codes_in_db(entry)
-			dict={'code':[],'date':[]}
-			current_id = id
-			dict['code'].append(icd10)
-			dict['date'].append(validate_date(cols[date_num]))
-
-#get_codes_from_file_in_db("/data/hesin_registry.tsv",dict_map)
+def process_resmod(code,res_modD=res_modD):
+	res_modD2 = res_modD.query('code == "%s"' % code)[['code','time','comorbidevent','RR','se','pval','count_a','count_b','count_c','count_d','ratio_comorb','ratio_nocomorb','irr']]
+	if len(res_modD2['time'])>0:
+		res_modD2['yes_data'] = 'TRUE'
+		res_modD2['label'] = return_comorbid_label(res_modD2,dict_map)
+		res_modD2['RR'] = numpy.exp(res_modD2['RR'])
+		res_modD2['ratio_comorb'] = numpy.round(res_modD2['ratio_comorb'],3)
+		res_modD2['ratio_nocomorb'] = numpy.round(numpy.exp(res_modD2['ratio_nocomorb']),3)
+		res_modD2['irr'] = numpy.round(res_modD2['irr'])
+	else:
+		res_modD2['yes_data'] = 'FALSE'
+	return(res_modD2.to_dict(orient='records'))
 
 
 
@@ -126,140 +74,7 @@ dict_map=get_map_codes("/data/icd10cm_order_2016.txt")
 
 
 
-def count_all_icd_codes(db):
-	try:
-		all_icd_codes
-	except NameError:
-		pipeline_all=[{"$project": {"code": "$code", 
-		"_id": "$id"}}, 
-		{"$unwind": "$code"}, 
-		{"$group": {"_id": "$_id", 
-		"code": {"$addToSet": "$code"}}},
-		{"$unwind": "$code"}, 
-		{"$group": {"_id": "$code", "count": {"$sum": 1}}}]
-		return(list(db.individuals.aggregate(pipeline_all)))
-	else:
-		return(all_icd_codes)
-
-
-####### FUNCTIONS TO CALCULATE THE RISK RATIO AND RELATED MEASURES #######
-
-
-
-def count_individuals_with_code(db,icd_code):
-	return(db.individuals.find({'code': icd_code}).count())
-
-
-def count_individuals_without_code(db,icd_code):
-	return(db.individuals.find({}).count())
-
-
-def remove_first_occurance_matching_list(codes_to_process,list_to_exclude):
-	codes_excludeT=list_to_exclude
-	for e in codes_to_process:
-		if e in codes_excludeT:
-			codes_to_process.remove(e)
-			codes_excludeT.remove(e)
-	return(set(codes_to_process))
-
-
-def select_individuals_with_code(db,icd_code):
-	pipeline_code=[
-		{"$project": { "code": "$code", "date": "$date"}},
-		{"$match": {"code": icd_code}}]
-	return(list(db.individuals.aggregate(pipeline_code)))
-
-
-def count_comorbid_icd_codes(db,icd_code,distance_days=7):
-	out=select_individuals_with_code(db,icd_code)
-	all_codes=[]
-	all_codes_before=[]
-	all_codes_after=[]
-	for individual in out:
-		codes=[x for (y,x) in sorted(zip(individual['date'],individual['code']))]
-		ind_code=codes.index(icd_code)
-		dates=sorted(individual['date'])
-		# Keep only at least a distance of 7 days
-		codes_exclude=[codes[ind] for ind, a in enumerate(dates) if abs((dates[ind_code]-a).days) <= distance_days]
-		code_before=codes[:ind_code]
-		code_after=codes[(ind_code+1):]
-		if len(code_before) > 0:
-			proc_before=remove_first_occurance_matching_list(code_before,codes_exclude)
-			all_codes_before.extend(proc_before)
-		if len(code_after) > 0:
-			proc_after=remove_first_occurance_matching_list(code_after,codes_exclude)
-			all_codes_after.extend(proc_after)
-		if len(codes) > 0:
-			proc_all=remove_first_occurance_matching_list(codes,codes_exclude)
-			all_codes.extend(proc_all)
-	a1=dict(Counter(all_codes_before))
-	a2=dict(Counter(all_codes_after))
-	a3=dict(Counter(all_codes))
-	return(a1,a2,a3)
-
-
-def compute_risk_ratio(key,count_a,all_icd_codes,all_individuals_with_code,all_individuals):
-	for element_all in all_icd_codes:
-		if key==element_all['_id']:
-			all_count_yes=element_all['count']
-			all_count_no=all_individuals-all_count_yes
-			count_b=all_count_yes-count_a
-			count_c=all_individuals_with_code-count_a
-			count_d=all_count_no-count_c
-			se=math.sqrt(((count_b/count_a)/all_count_yes)+((count_d/count_c)/all_count_no))
-			RR=(count_a/all_count_yes)/(count_c/all_count_no)
-			z=(math.log(RR)/se)
-			pval=2*stats.norm.cdf(-abs(z))
-			return({'code':key,'RR':RR,'pval':pval,'perc_on_all':count_a/all_count_yes,'n_events':count_a})
-
-
-
-def output_risk_ratio(db,icd_code,min_individuals_with_code=10):
-	all_icd_codes=count_all_icd_codes(db)
-	comorbid_codes_before, comorbid_codes_after, comorbid_codes_all =count_comorbid_icd_codes(db,icd_code)
-	all_individuals_with_code=count_individuals_with_code(db,icd_code)
-	all_individuals=db.individuals.count()
-	list_RR_all=[]
-	list_RR_before=[]
-	list_RR_after=[]
-	for key in comorbid_codes_all:
-		try:
-			count_a_before=comorbid_codes_before[key]
-			if count_a_before > min_individuals_with_code:
-				list_RR_before.append(compute_risk_ratio(key,count_a_before,all_icd_codes,all_individuals_with_code,all_individuals))
-		except KeyError:
-			continue
-		try:
-			count_a_after=comorbid_codes_after[key]
-			if count_a_after > min_individuals_with_code:
-				list_RR_after.append(compute_risk_ratio(key,count_a_after,all_icd_codes,all_individuals_with_code,all_individuals))
-		except KeyError:
-			continue
-		try:
-			count_a_all=comorbid_codes_all[key]
-			if count_a_all > min_individuals_with_code:
-				list_RR_all.append(compute_risk_ratio(key,count_a_all,all_icd_codes,all_individuals_with_code,all_individuals))
-		except KeyError:
-			continue
-	toreturn={'before':list_RR_before,'after':list_RR_after,'all':list_RR_all}
-	return(toreturn)
-
-
-
-###### FUNCTION TO CALCULATE DATES ########
-
-def return_date_by_code(db,icd_code):
-	with_code=select_individuals_with_code(db, icd_code)
-	dateout=[]
-	for element in with_code:
-		code_index=element['code'].index(icd_code)
-		dateout.append((element['date'][code_index].year))
-	counter_dates=dict(Counter(dateout))
-	dict_dates=[{'year':k,'count':v} for k,v in counter_dates.items()]
-	return(sorted(dict_dates, key=lambda k: k['year'],reverse=True))
-
-
-def return_icd_label(icd_code):
+def return_icd_label(icd_code,dict_map):
 	try:
 		icd_label = dict_map[icd_code]['label']
 	except KeyError:
@@ -267,10 +82,20 @@ def return_icd_label(icd_code):
 	return icd_label
 
 
+def return_comorbid_label(data,dict_map):
+	label=[]
+	for com_code in data['comorbidevent']:
+		try:
+			label.append(dict_map[com_code]['label'])
+		except KeyError:
+			label.append('label not found')
+	return label
+
+
+
 @app.route('/')
 def home():
-	db = get_db()
-	number_all_indiv=db.individuals.count()
+	number_all_indiv='498,828'
 	return render_template('home.html', number_all_indiv=number_all_indiv)
  
 
@@ -282,20 +107,21 @@ def awesome():
 
 
 @app.route('/code/<code>')
-def individual_page(code,min_number_of_individuals_for_reporting=20):
-	db = get_db()
-	label_icds = return_icd_label(code)
+def individual_page(code,dict_map=dict_map,min_number_of_individuals_for_reporting=20):
+	label_icds = return_icd_label(code,dict_map)
 	if label_icds is None:
 		abort(404)
-	number_icds = count_individuals_with_code(db, code)
-	if number_icds < min_number_of_individuals_for_reporting:
+	
+	otherinfoT = process_otherinfo(code)
+
+	if len(otherinfoT) == 0:
 		abort(405)
-	else:
-		prevalence=number_icds/db.individuals.count()
-		#hist_comorb_before, hist_comorb_after, hist_comorb_all = output_risk_ratio(db,code)
-		hist_comorb = output_risk_ratio(db,code)
-		count_date=return_date_by_code(db,code)
-	return render_template("code.html", code=code,number_id=number_icds, prevalence=prevalence, hist_comorb=hist_comorb, label=label_icds,count_date=count_date)
+
+	incidenceT = process_incidence(code)
+	resmodT = process_resmod(code)
+
+	return render_template("code.html", code=code, n_events=int(otherinfoT[0]['n_events']), prevalence=otherinfoT[0]['prevalence'], incidence=incidenceT, res_mod=resmodT, label=label_icds)
+
 
 
 
