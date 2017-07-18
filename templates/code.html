@@ -5,7 +5,7 @@
 <script type="text/javascript">
 
 
-chart_margin = {top: 20, right: 20, bottom: 70, left: 40},
+chart_margin = {top: 20, right: 20, bottom: 70, left: 50},
     hist_chart_width = 800 - chart_margin.left - chart_margin.right,
     hist_chart_height = 300 - chart_margin.top - chart_margin.bottom;
 
@@ -14,13 +14,166 @@ chart_margin = {top: 20, right: 20, bottom: 70, left: 40},
 function hist_chart(data) {
 
     
+    var x = d3.scaleBand()
+        .rangeRound([0, hist_chart_width])
+        .padding(0.1)
+        .domain(data.map(function(d) { return d.comorbidevent; }));
 
-    var selector = 'all'
+    var y = d3.scaleLinear()
+        .range([hist_chart_height, 0])
+        .domain([0, d3.max(data, function(d) { return d.RR; })]);
 
-    // var data_query = temp2.slice(0,20)
+    var tip = d3.tip()
+        .attr('class', 'd3-tip')
+        //.offset([120, 0])
+        .html(function(d) { 
+            return "<p><b style='color:red' align='center' >" + d.label + "</b></p>" +
+                    "<p> <strong>N with </strong>" + d.comorbidevent + ": " + d.count_a + "</p>" +
+                    "<p> <strong>IRx1000 py w </strong>" + d.comorbidevent + ": " + d.ratio_comorb + "</p>" +
+                    "<p> <strong>IRx1000 py w/o </strong>" + d.comorbidevent + ": " + d.ratio_nocomorb + "</p>" +
+                    "<p> <strong>P: </strong>" + (d.pval).toPrecision(2) + "</p>"
+             });
+
+    var xAxis = d3.axisBottom(x);
+
+    var yAxis = d3.axisLeft(y);
+
+
+    var svg = d3.select('#svg_hist_chart')
+        .attr("width", hist_chart_width)
+        .attr("height", hist_chart_height)
+        .append("g")
+        .attr('id', 'inner_graph')
+        .attr("transform", "translate(" + chart_margin.left + "," + chart_margin.top + ")");
+
+    svg.call(tip);
+
+    svg.selectAll("bar")
+        .data(data, function(d){return d.indexkey;})
+        .enter()
+        .append("rect")
+        .attr("class", "hist_bar")
+        .attr("x", function(d) { return x(d.comorbidevent); })
+        .attr("y", function(d) { return y(d.RR); })
+        .attr("width", x.bandwidth())
+        .attr("height", function(d) { return (hist_chart_height - y(d.RR)); })
+        .on('mouseover', tip.show)
+        .on('mouseout', tip.hide)
+
+    svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + hist_chart_height + ")")
+        .call(xAxis);
+    
+    svg.append("g")
+        .attr("class", "y axis")
+        .call(yAxis);
+
+    svg.append("text") 
+      .attr("id", "xlabel")             
+      .attr("transform",
+            "translate(" + (hist_chart_width/2) + " ," + (hist_chart_height + chart_margin.top + 20) + ")")
+      .style("text-anchor", "middle")
+      .text("Comorbid ICD");
+
+    svg.append("text")
+      .attr("id", "ylabel")   
+      .attr("transform", "rotate(-90)")
+      .attr("y", 0 - chart_margin.left)
+      .attr("x",0 - (hist_chart_height / 2))
+      .attr("dy", "1em")
+      .style("text-anchor", "middle")
+      .text("Hazard Ratio"); 
+
+}
 
 
 
+function hist_chart_after(data) {
+
+    
+    var x = d3.scaleBand()
+        .rangeRound([0, hist_chart_width])
+        .padding(0.1)
+        .domain(data.map(function(d) { return d.comorbidevent; }));
+
+    var y = d3.scaleLinear()
+        .range([hist_chart_height, 0])
+        .domain([0, d3.max(data, function(d) { return d.RR; })]);
+
+    var tip = d3.tip()
+        .attr('class', 'd3-tip')
+        //.offset([120, 0])
+        .html(function(d) { 
+            return "<p><b style='color:red' align='center' >" + d.label + "</b></p>" +
+                    "<p> <strong>N with </strong>" + d.comorbidevent + ": " + d.count_a + "</p>" +
+                    "<p> <strong>IRx1000 py w </strong>" + d.comorbidevent + ": " + d.ratio_comorb + "</p>" +
+                    "<p> <strong>IRx1000 py w/o </strong>" + d.comorbidevent + ": " + d.ratio_nocomorb + "</p>" +
+                    "<p> <strong>P: </strong>" + (d.pval).toPrecision(2) + "</p>"
+             });
+
+    var xAxis = d3.axisBottom(x);
+
+    var yAxis = d3.axisLeft(y);
+
+
+    var svg = d3.select('#svg_hist_chart_after')
+        .attr("width", hist_chart_width)
+        .attr("height", hist_chart_height)
+        .append("g")
+        .attr('id', 'inner_graph')
+        .attr("transform", "translate(" + chart_margin.left + "," + chart_margin.top + ")");
+
+    svg.call(tip);
+
+    svg.selectAll("bar")
+        .data(data, function(d){return d.indexkey;})
+        .enter()
+        .append("rect")
+        .attr("class", "hist_bar")
+        .attr("x", function(d) { return x(d.comorbidevent); })
+        .attr("y", function(d) { return y(d.RR); })
+        .attr("width", x.bandwidth())
+        .attr("height", function(d) { return (hist_chart_height - y(d.RR)); })
+        .on('mouseover', tip.show)
+        .on('mouseout', tip.hide)
+
+    svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + hist_chart_height + ")")
+        .call(xAxis);
+    
+    svg.append("g")
+        .attr("class", "y axis")
+        .call(yAxis);
+
+    svg.append("text") 
+      .attr("id", "xlabel")             
+      .attr("transform",
+            "translate(" + (hist_chart_width/2) + " ," + (hist_chart_height + chart_margin.top + 20) + ")")
+      .style("text-anchor", "middle")
+      .text("Comorbid ICD");
+
+    svg.append("text")
+      .attr("id", "ylabel")   
+      .attr("transform", "rotate(-90)")
+      .attr("y", 0 - chart_margin.left)
+      .attr("x",0 - (hist_chart_height / 2))
+      .attr("dy", "1em")
+      .style("text-anchor", "middle")
+      .text("Hazard Ratio"); 
+
+
+}
+
+
+
+function change_hist_chart(data) {
+
+    // if (data[metric].length > 0)
+    // {
+
+    
     var x = d3.scaleBand()
         .rangeRound([0, hist_chart_width])
         .padding(0.1)
@@ -44,91 +197,80 @@ function hist_chart(data) {
 
     var yAxis = d3.axisLeft(y);
 
-
-    var svg = d3.select('#svg_hist_chart')
-        .attr("width", hist_chart_width)
-        .attr("height", hist_chart_height)
-        .append("g")
-        .attr('id', 'inner_graph')
-        .attr("transform", "translate(" + chart_margin.left + "," + chart_margin.top + ")");
+    
+    var svg = d3.select('#svg_hist_chart').select('#inner_graph');
 
     svg.call(tip);
 
-    svg.selectAll("bar")
-        .data(data)
-        .enter()
-        .append("rect")
-        .attr("class", "hist_bar")
+    var svg2 = svg.selectAll("rect")
+        .data(data, function(d){return d.indexkey;})
+
+    svg2.exit().remove();
+
+    svg2.enter().append("rect").attr("class", "hist_bar")
+        .merge(svg2)
         .attr("x", function(d) { return x(d.comorbidevent); })
         .attr("y", function(d) { return y(d.RR); })
         .attr("width", x.bandwidth())
-        .attr("height", function(d) { return (hist_chart_height - y(d.RR)); })
+        .attr("height", function(d) { return hist_chart_height - y(d.RR); })
         .on('mouseover', tip.show)
         .on('mouseout', tip.hide)
 
-    svg.append("g")
-        .attr("class", "x axis")
-        .attr("transform", "translate(0," + hist_chart_height + ")")
-        .call(xAxis);
-    
-    svg.append("g")
-        .attr("class", "y axis")
+    var yAxis = d3.axisLeft(y);
+
+    svg.select(".y.axis")
+        .transition()
+        .duration(200)
         .call(yAxis);
 
-}
+    var xAxis = d3.axisBottom(x);
+
+    svg.select(".x.axis")
+        .transition()
+        .duration(200)
+        .call(xAxis);
 
 
-function change_hist_chart(data) {
-
-    // if (data[metric].length > 0)
-    // {
-
-    
-        var x = d3.scaleBand()
-            .rangeRound([0, hist_chart_width])
-            .padding(0.1)
-            .domain(data.map(function(d) { return d.comorbidevent; }));
-
-        var y = d3.scaleLinear()
-            .range([hist_chart_height, 0])
-            .domain([0, d3.max(data, function(d) { return d.RR; })]);
 
 
-        var svg = d3.select('#svg_hist_chart').select('#inner_graph');
+    d3.select("#ndtext").remove()
 
+    if (d3.select("#xlabel").empty())
+    {
 
-        var svg2 = svg.selectAll("rect")
-            .data(data)
+    svg.append("text") 
+      .attr("id", "xlabel")             
+      .attr("transform",
+            "translate(" + (hist_chart_width/2) + " ," + (hist_chart_height + chart_margin.top + 20) + ")")
+      .style("text-anchor", "middle")
+      .text("Comorbid ICD");
 
-        console.log(svg2)
+    svg.append("text")
+      .attr("id", "ylabel")   
+      .attr("transform", "rotate(-90)")
+      .attr("y", 0 - chart_margin.left)
+      .attr("x",0 - (hist_chart_height / 2))
+      .attr("dy", "1em")
+      .style("text-anchor", "middle")
+      .text("Hazard Ratio"); 
+    }
 
-        svg2.exit().remove();
+    if (data.length===0)
+    {
+        svg.append("text")
+          .attr("id", "ndtext")         
+          .attr("transform",
+            "translate(" + (hist_chart_width/2) + " ," + (hist_chart_height - 80) + ")")
+          .style("font-size", "26px")
+          .style('font-weight', 'bold')
+          .style("text-anchor", "middle")
+          .style('text-color', '#525252')
+          .text("No data available");
 
-        console.log(svg2)
+          d3.select("#xlabel").remove()
+          d3.select("#ylabel").remove()
+    }
 
-        svg2
-            .append("rect")
-            .merge(temp)
-            .attr("x", function(d) { return x(d.comorbidevent); })
-            .attr("y", function(d) { return y(d.RR); })
-            .attr("width", x.bandwidth())
-            .attr("height", function(d) { return hist_chart_height - y(d.RR); })
-
-        console.log(svg2)
-
-        var yAxis = d3.axisLeft(y);
-
-        svg.select(".y.axis")
-            .transition()
-            .duration(200)
-            .call(yAxis);
-
-        var xAxis = d3.axisBottom(x);
-
-        svg.select(".x.axis")
-            .transition()
-            .duration(200)
-            .call(xAxis);
 
       
 }
@@ -136,22 +278,137 @@ function change_hist_chart(data) {
 
 
 
+function change_hist_chart_after(data) {
+
+    // if (data[metric].length > 0)
+    // {
+
+    
+    var x = d3.scaleBand()
+        .rangeRound([0, hist_chart_width])
+        .padding(0.1)
+        .domain(data.map(function(d) { return d.comorbidevent; }));
+
+    var y = d3.scaleLinear()
+        .range([hist_chart_height, 0])
+        .domain([0, d3.max(data, function(d) { return d.RR; })]);
+
+    var tip = d3.tip()
+        .attr('class', 'd3-tip')
+        .html(function(d) { 
+            return "<p style='color:red' align='center'>" + d.label + "</p>" +
+                    "<p> <strong>N with </strong>" + d.comorbidevent + ": " + d.count_a + "</p>" +
+                    "<p> <strong>IRx1000 py w </strong>" + d.comorbidevent + ": " + d.ratio_comorb + "</p>" +
+                    "<p> <strong>IRx1000 py w/o </strong>" + d.comorbidevent + ": " + d.ratio_nocomorb + "</p>" +
+                    "<p> <strong>P: </strong>" + (d.pval).toPrecision(2) + "</p>"
+             });
+
+    var xAxis = d3.axisBottom(x);
+
+    var yAxis = d3.axisLeft(y);
+
+    
+    var svg = d3.select('#svg_hist_chart_after').select('#inner_graph');
+
+    svg.call(tip);
+
+    var svg2 = svg.selectAll("rect")
+        .data(data, function(d){return d.indexkey;})
+
+    svg2.exit().remove();
+
+    svg2.enter().append("rect").attr("class", "hist_bar")
+        .merge(svg2)
+        .attr("x", function(d) { return x(d.comorbidevent); })
+        .attr("y", function(d) { return y(d.RR); })
+        .attr("width", x.bandwidth())
+        .attr("height", function(d) { return hist_chart_height - y(d.RR); })
+        .on('mouseover', tip.show)
+        .on('mouseout', tip.hide)
+
+    var yAxis = d3.axisLeft(y);
+
+    svg.select(".y.axis")
+        .transition()
+        .duration(200)
+        .call(yAxis);
+
+    var xAxis = d3.axisBottom(x);
+
+    svg.select(".x.axis")
+        .transition()
+        .duration(200)
+        .call(xAxis);
+
+
+
+
+    d3.select("#ndtext").remove()
+
+    if (d3.select("#xlabel").empty())
+    {
+
+    svg.append("text") 
+      .attr("id", "xlabel")             
+      .attr("transform",
+            "translate(" + (hist_chart_width/2) + " ," + (hist_chart_height + chart_margin.top + 20) + ")")
+      .style("text-anchor", "middle")
+      .text("Comorbid ICD");
+
+    svg.append("text")
+      .attr("id", "ylabel")   
+      .attr("transform", "rotate(-90)")
+      .attr("y", 0 - chart_margin.left)
+      .attr("x",0 - (hist_chart_height / 2))
+      .attr("dy", "1em")
+      .style("text-anchor", "middle")
+      .text("Hazard Ratio"); 
+    }
+
+    if (data.length===0)
+    {
+        svg.append("text")
+          .attr("id", "ndtext")         
+          .attr("transform",
+            "translate(" + (hist_chart_width/2) + " ," + (hist_chart_height - 80) + ")")
+          .style("font-size", "26px")
+          .style('font-weight', 'bold')
+          .style("text-anchor", "middle")
+          .style('text-color', '#525252')
+          .text("No data available");
+
+          d3.select("#xlabel").remove()
+          d3.select("#ylabel").remove()
+    }
+
+
+      
+}
+
+
+
 function time_chart(data) {
 
 
+    var x = d3
+            .scaleTime()
+            .range([0, hist_chart_width]);
+            
+    var y = d3.scaleLinear()
+            .range([hist_chart_height, 0]);
 
-    var svg = d3.select('#svg_time_chart'),
-        margin = {top: 20, right: 20, bottom: 70, left: 40},
-        width = 800 - margin.left - margin.right,
-        height = 300 - margin.top - margin.bottom;
+
+
+
+    var svg = d3.select('#svg_time_chart')
+        .attr("width", hist_chart_width)
+        .attr("height", hist_chart_height)
+        .append("g")
+        .attr("transform", "translate(" + chart_margin.left + "," + chart_margin.top + ")");
 
 
     var parseTime = d3.timeParse("%Y");
 
-    //console.log(data)
-
-    var x = d3.scaleTime().range([0, width]);
-    var y = d3.scaleLinear().range([height, 0]);
 
 
     var valueline = d3.line()
@@ -160,21 +417,18 @@ function time_chart(data) {
 
 
 
-    var g = svg.append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-
-      data.map(function(d) {
+    data.map(function(d) {
       d.year = parseTime(d.year)
       d.incidence = +d.incidence
      });
 
 
-      x.domain(d3.extent(data, function(d) { return d.year; }));
-      y.domain([0, d3.max(data, function(d) { return d.incidence; })]);
+    x.domain(d3.extent(data, function(d) { return d.year; }));
+    y.domain([0, d3.max(data, function(d) { return d.incidence; })]);
 
 
-    g.append("path")
+
+    svg.append("path")
       .datum(data)
       .attr("fill", "none")
       .attr("stroke", "steelblue")
@@ -184,25 +438,29 @@ function time_chart(data) {
       .attr("d", valueline);
 
 
-    g.append("g")
+    svg.append("g")
       .attr("class", "axis axis--x")
-      .attr("transform", "translate(0," + height + ")")
+      .attr("transform", "translate(0," + hist_chart_height + ")")
       .call(d3.axisBottom(x))
-    .selectAll("text")    
-        .style("text-anchor", "end")
-        .attr("dx", "-.8em")
-        .attr("dy", ".15em")
-        .attr("transform", "rotate(-65)");
 
-     g.append("g")
+    svg.append("g")
       .attr("class", "axis axis--y")
       .call(d3.axisLeft(y))
-    .append("text")
+
+
+    svg.append("text")           
+      .attr("transform",
+            "translate(" + (hist_chart_width/2) + " ," + (hist_chart_height + chart_margin.top + 20) + ")")
+      .style("text-anchor", "middle")
+      .text("Year");
+
+    svg.append("text")
       .attr("transform", "rotate(-90)")
-      .attr("y", 6)
-      .attr("dy", "0.71em")
-      .attr("text-anchor", "end")
-      .text("Count");
+      .attr("y", -5 - chart_margin.left)
+      .attr("x",0 - (hist_chart_height / 2))
+      .attr("dy", "1em")
+      .style("text-anchor", "middle")
+      .text("Incidence proportion"); 
 
 
 }
@@ -210,13 +468,19 @@ function time_chart(data) {
 
 
 
+map_margin = {top: 20, right: 20, bottom: 70, left: 40},
+    map_chart_width = 300 - chart_margin.left - chart_margin.right,
+    map_chart_height = 600 - chart_margin.top - chart_margin.bottom;
+
+
 function map_chart() {
 
 
-     var svg = d3.select('#svg_map_chart'),
-        margin = {top: 20, right: 20, bottom: 70, left: 40},
-        width = 300 - margin.left - margin.right,
-        height = 600 - margin.top - margin.bottom;
+
+    var svg = d3.select('#svg_map_chart')
+        .attr("width", map_chart_width)
+        .attr("height", map_chart_height)
+        .append("g")
 
 
     var color=d3.scaleQuantize()
@@ -224,11 +488,10 @@ function map_chart() {
     .domain([0,100]);
 
 
-
     var projection = d3.geoMercator()
       //.scale((1 << 22) / 2 / Math.PI)
       .scale(1000)
-      .translate([width / 2, height / 2])
+      .translate([map_chart_width / 2, map_chart_height / 2])
       .center([24.408320099999997,64.8130752])
       //.translate([50, 700])
 
@@ -236,7 +499,6 @@ function map_chart() {
     var path = d3.geoPath()
       .projection(projection);
 
-    var g = svg.append("g")
 
     var div2 = d3.select("body").append("div2")
     .attr("class", "tooltip")
@@ -257,7 +519,7 @@ function map_chart() {
             var features = geojson.features;
 
               // Draw each province as a path
-            g.selectAll("path")
+            svg.selectAll("path")
                   .data(features)
                   .enter().append('path')
                   .attr('d', path)
@@ -285,6 +547,7 @@ function map_chart() {
     });
 
 
+
 var setNormalColor=function(d){var value=d.properties.value;if(value){return color(value);}else{return"red";}};
 
 
@@ -295,16 +558,24 @@ var setNormalColor=function(d){var value=d.properties.value;if(value){return col
 $(document).ready(function() {
 
         window.res_mod={{ res_mod|tojson|safe }};
+        window.res_mod_after={{ res_mod_after|tojson|safe }};
         window.incidence={{ incidence|tojson|safe }};
 
-        var temp1 = window.res_mod.slice(0,20)
-        var first_datain = temp1.sort(function(a, b) {
-                return parseFloat(a.RR) - parseFloat(b.RR);});
+        var temp = res_mod.filter(function (obj) {
+                return obj.time === '8-999999999999';});
+        var first_datain = temp.sort(function(a, b) {
+                return parseFloat(b.RR) - parseFloat(a.RR);});
 
-        hist_chart(first_datain)
+
+        var temp = res_mod_after.filter(function (obj) {
+                return obj.time === '8-999999999999';});
+        var first_datain_after = temp.sort(function(a, b) {
+                return parseFloat(b.RR) - parseFloat(a.RR);});
+
+        hist_chart(first_datain.slice(0,20))
+        hist_chart_after(first_datain_after.slice(0,20))
         time_chart(window.incidence)
         map_chart()
-
 
 
         $('.hist_buttons').change(function () {
@@ -312,53 +583,78 @@ $(document).ready(function() {
             var v2 = $('.rr_buttons.active').attr('id')
 
             var data = window.res_mod
+            var data_after = window.res_mod_after
+
             if (v2 == "ge1")
             {
                 var temp = data.filter(function (obj) {
                 return obj.time === v1 & obj.RR >= 1;});
-                var temp2 = temp.sort(function(a, b) {
-                return parseFloat(a.RR) - parseFloat(b.RR);});
-                var data_query = temp2.slice(0,20)
+                var data_query = temp.sort(function(a, b) {
+                return parseFloat(b.RR) - parseFloat(a.RR);});
+
+                var temp2 = data_after.filter(function (obj) {
+                return obj.time === v1 & obj.RR >= 1;});
+                var data_query_after = temp2.sort(function(a, b) {
+                return parseFloat(b.RR) - parseFloat(a.RR);});
             }
 
             else
             {
                 var temp = data.filter(function (obj) {
                 return obj.time === v1 & obj.RR < 1;});
-                var temp2 = temp.sort(function(a, b) {
+                var data_query = temp.sort(function(a, b) {
                 return parseFloat(a.RR) - parseFloat(b.RR);});
-                var data_query = temp2.slice(0,20)
+
+                var temp2 = data_after.filter(function (obj) {
+                return obj.time === v1 & obj.RR < 1;});
+                var data_query_after = temp2.sort(function(a, b) {
+                return parseFloat(a.RR) - parseFloat(b.RR);});
             }
 
-            change_hist_chart(data_query);
+            change_hist_chart(data_query.slice(0,20));
+            change_hist_chart_after(data_query_after.slice(0,20));
+                
         });
-
 
         $('.rr_buttons').change(function () {
             var v1 = $('.hist_buttons.active').attr('id')
             var v2 = $(this).attr('id'); 
 
             var data = window.res_mod
+            var data_after = window.res_mod_after
+
             if (v2 == "ge1")
             {
                 var temp = data.filter(function (obj) {
                 return obj.time === v1 & obj.RR >= 1;});
-                var temp2 = temp.sort(function(a, b) {
+                var data_query = temp.sort(function(a, b) {
                 return parseFloat(b.RR) - parseFloat(a.RR);});
-                var data_query = temp2.slice(0,20)
+
+                var temp = data_after.filter(function (obj) {
+                return obj.time === v1 & obj.RR >= 1;});
+                var data_query_after = temp.sort(function(a, b) {
+                return parseFloat(b.RR) - parseFloat(a.RR);});
             }
 
             else
             {
                 var temp = data.filter(function (obj) {
                 return obj.time === v1 & obj.RR < 1;});
-                var temp2 = temp.sort(function(a, b) {
+                var data_query = temp.sort(function(a, b) {
                 return parseFloat(a.RR) - parseFloat(b.RR);});
-                var data_query = temp2.slice(0,20)
+
+
+                var temp = data_after.filter(function (obj) {
+                return obj.time === v1 & obj.RR >= 1;});
+                var data_query_after = temp.sort(function(a, b) {
+                return parseFloat(b.RR) - parseFloat(a.RR);});
             }
 
-
-            change_hist_chart(data_query);
+            console.log(data_query)
+            console.log(data_query_after)
+            change_hist_chart(data_query.slice(0,20));
+            change_hist_chart_after(data_query_after.slice(0,20));
+               
         });
 });
 
@@ -371,32 +667,74 @@ $(document).ready(function() {
 <div class="container-fluid">
 
     <div class="col-md-10 col-xs-offset-1 col-md-offset-1">
-        <h1>ICD code: {{ code }} - {{ label }} </h1>
+        <h1> ICD code: <a href="http://apps.who.int/classifications/icd10/browse/2016/en#/{{ code }}">{{ code }} </a> - {{ label }} </h1>
         <hr/>
     </div>
 
-    <div class="row">
+    <div class="col-md-10 col-xs-offset-1 col-md-offset-1">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th style="padding-top: 4px;"> </th>
+                    <th style="padding-top: 4px;">Female </th>
+                    <th style="padding-top: 4px;">Male </th>
+                    <th style="padding-top: 4px;">Total </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td> N. individuals </td>
+                    <td> {{ n_events_M }} </td>
+                    <td> {{ n_events_F }} </td>
+                    <td> {{ n_events_TOT }} </td>
+                </tr>
+                <tr>
+                    <td> N. individual with event after baseline </td>
+                    <td> {{ n_afterbs_M }} </td>
+                    <td> {{ n_afterbs_F }} </td>
+                    <td> {{ n_afterbs_TOT }} </td>
+                </tr>
+                <tr>
+                    <td> Prevalence (%) </td>
+                    <td> {{ prevalence_M }} </td>
+                    <td> {{ prevalence_F }} </td>
+                    <td> {{ prevalence_TOT }} </td>
+                </tr>
+                <tr>
+                    <td> Mean age at first event </td>
+                    <td> {{ meanage_M }} </td>
+                    <td> {{ meanage_F }} </td>
+                    <td> {{ meanage_TOT }} </td>
+                </tr>
+                <tr>
+                    <td> Mortality Rate (x1000 people) </td>
+                    <td> {{ mort_M }} </td>
+                    <td> {{ mort_F }} </td>
+                    <td> {{ mort_TOT }} </td>
+                </tr>
+            </tbody>
+        </table>
+    </div> 
+    <div class="col-md-10 col-xs-offset-1 col-md-offset-1">
+        <h3>Report</h3>
+        <div class="card">
+            <div class="card-block">
+            <h4> {{ code }} is more prevalent among old males,
+            the ICD code is mostly diagnosed in Helsinki area and there have not been
+            significant changes in the past 10 years.
 
-        <div class="col-md-10 col-xs-10 col-xs-offset-1 col-md-offset-1">
-            <dl class="dl-horizontal">
-                <dt>N. individuals with {{ code }} from 1998: </dt>
-                <dd>{{ n_events }}</dd>
-                <dt>N. individuals with {{ code }} in the last year:</dt>
-                <dd>{{ n_events }}</dd>
-                <dt >Prevalence: </dt>
-                <dd> {{ prevalence }} % </dd>
-            </dl>
+            There is highly chance that individuals with this ICD code will be diagnosed with
+            C18 in the near future.</h4>
+            </div>
         </div>
-
-    </div>
-
+        <hr/>
+    </div> 
     <div class="row">
-        <div class="col-md-10 col-md-offset-1">
+        <div class="col-md-10 col-xs-offset-1 col-md-offset-1">
             <h3>Hazard Ratio Summary</h3>
-
-            <div class="row">
+            <br>
+            <div class="row col-md-10 col-md-offset-0">
                 <span class="hidden-xs">
-
                     <label for="hist_buttons">
                         Dispaly:
                     </label>
@@ -427,7 +765,7 @@ $(document).ready(function() {
                     </span>
                 </span>
 
-                <span style="float:right;">
+                <span style="float:center;">
 
                     <label for="rr_buttons">
                         Risk ratio:
@@ -437,19 +775,28 @@ $(document).ready(function() {
 
                         <button class="btn btn-primary active rr_buttons"
                               id="ge1" data-tooltip="Show only codes with RR >=1 1">
-                          <input type="radio">RR > 1</input>
+                          <input type="radio">HR > 1</input>
                         </button>
 
                         <button class="btn btn-primary rr_buttons"
                               id="lt1" data-tooltip="Show only codes with RR < 1">
-                          <input type="radio">RR < 1</input>
+                          <input type="radio">HR < 1</input>
                         </button>
 
                     </span>
                 </span>    
                 <br>
+                <br>
+                <h4>ICD codes (N>10) observed before {{ code }} </h4>
+                <br
                 <span style="overflow-x: scroll; display: inline-block">
                     <svg style="width: 800; height:300" class="hidden-xs" id="svg_hist_chart"/>
+                </span>
+                <br>
+                <h4>ICD codes (N>10) observed after {{ code }} </h4>
+                <br>
+                <span style="overflow-x: scroll; display: inline-block">
+                    <svg style="width: 800; height:300" class="hidden-xs" id="svg_hist_chart_after"/>
                 </span>
             </div> 
         </div>
@@ -468,19 +815,6 @@ $(document).ready(function() {
             <span style="overflow-x: scroll; display: inline-block; width: 691.667px;">
                 <svg style="width: 300; height:600" class="hidden-xs" id="svg_map_chart"/>
             </span>
-        </div>
-         <div class="col-md-4 col-md-offset-1">
-            <h3>Report</h3>
-            <div class="card">
-                <div class="card-block">
-                <h4>Individuals with this ICD code are prevalently 36 years old males,
-                the ICD code is mostly diagnosed in Helsinki area and there have not been
-                significant changes in the past 10 years.
-
-                There is highly chance that individuals with this ICD code will be diagnosed with
-                C18 in the near future.</h4>
-                </div>
-            </div>
         </div>
     </div>
 </div>

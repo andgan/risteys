@@ -99,12 +99,14 @@
 }
 
 .d3-tip {
+  z-index: 5;
   line-height: 1;
-  font-weight: bold;
   padding: 12px;
   background: rgba(0, 0, 0, 0.8);
   color: #fff;
   border-radius: 2px;
+  width: 250px;
+  height: 150px;
 }
 
 /* Style northward tooltips differently */
@@ -113,6 +115,11 @@
   top: 100%;
   left: 0;
 }
+
+
+
+
+
 
 .table_hover {
     background-color: #b5f7ff !important;

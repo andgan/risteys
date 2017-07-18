@@ -10,30 +10,36 @@ import itertools
 import math
 import scipy.stats as stats
 import pandas
-import numpy
+import numpy as np
 
 app = Flask(__name__)      
 CORS(app)
 app.config['COMPRESS_DEBUG'] = True
-cache = SimpleCache()
-
 
 
 ### READ DATA IN ####
 otherinfo = '/Users/andreaganna/flaskapp/app/data/otherinfo.csv'
 incidence = '/Users/andreaganna/flaskapp/app/data/incidence_prop_year.csv'
 res_mod = '/Users/andreaganna/flaskapp/app/data/RES_MOD.csv'
+res_mod_after = '/Users/andreaganna/flaskapp/app/data/RES_MOD_AFTER.csv'
 
 
-
-otherinfoD = pandas.io.parsers.read_csv(otherinfo, header=None,names=['code','n_events','prevalence'])
+otherinfoD = pandas.io.parsers.read_csv(otherinfo, header=None,names=['code','n_events_M','n_events_F','n_afterbs_M','n_afterbs_F','prevalence_M','prevalence_F','prevalence_TOT','age_mean_M','age_mean_F','age_mean_TOT','age_median_M','age_median_F','age_median_TOT','mort_rate_M','mort_rate_F','mort_rate_TOT'])
 incidenceD = pandas.io.parsers.read_csv(incidence, header=None,names=['code','year','incidence'])
-res_modD = pandas.io.parsers.read_csv(res_mod, header=None,names=['code','time','comorbidevent','RR','se','pval','count_a','count_b','count_c','count_d','ratio_comorb','ratio_nocomorb','irr'])
+res_modD = pandas.io.parsers.read_csv(res_mod, header=None,names=['code','time','comorbidevent','RR','se','pval','count_a','count_b','count_c','count_d','mean_dist','median_dist','ratio_comorb','ratio_nocomorb','irr'])
+res_mod_afterD = pandas.io.parsers.read_csv(res_mod_after, header=None,names=['code','time','comorbidevent','RR','se','pval','count_a','count_b','count_c','count_d','mean_dist','median_dist','ratio_comorb','ratio_nocomorb','irr'])
 
 
 def process_otherinfo(code,otherinfoD=otherinfoD):
-	otherinfoD2 = otherinfoD.query('code == "%s"' % code)[['n_events','prevalence']]
-	otherinfoD2[['prevalence']] = numpy.round(otherinfoD2[['prevalence']]*100)
+	otherinfoD2 = otherinfoD.query('code == "%s"' % code).drop(['code'], axis=1)
+	otherinfoD2['n_events_TOT'] = otherinfoD['n_events_M'] + otherinfoD['n_events_F']
+	otherinfoD2['n_afterbs_TOT'] = otherinfoD['n_afterbs_M'] + otherinfoD['n_afterbs_F']
+	otherinfoD2[['prevalence_M']] = np.round(otherinfoD2[['prevalence_M']]*100, decimals=2)
+	otherinfoD2[['prevalence_F']] = np.round(otherinfoD2[['prevalence_F']]*100, decimals=2)
+	otherinfoD2[['prevalence_TOT']] = np.round(otherinfoD2[['prevalence_TOT']]*100, decimals=2)
+	otherinfoD2[['mort_rate_M']] = np.round(otherinfoD2[['mort_rate_M']], decimals=3)
+	otherinfoD2[['mort_rate_F']] = np.round(otherinfoD2[['mort_rate_F']], decimals=3)
+	otherinfoD2[['mort_rate_TOT']] = np.round(otherinfoD2[['mort_rate_TOT']], decimals=3)
 	return(otherinfoD2.to_dict(orient='records'))
 
 def process_incidence(code,incidenceD=incidenceD):
@@ -41,19 +47,18 @@ def process_incidence(code,incidenceD=incidenceD):
 	incidenceD2[['incidence']] = incidenceD2[['incidence']]*100
 	return(incidenceD2.sort_values(by='year').to_dict(orient='records'))
 
-def process_resmod(code,res_modD=res_modD):
-	res_modD2 = res_modD.query('code == "%s"' % code)[['code','time','comorbidevent','RR','se','pval','count_a','count_b','count_c','count_d','ratio_comorb','ratio_nocomorb','irr']]
+def process_resmod(code,res_modD):
+	res_modD2 = res_modD.query('code == "%s"' % code).drop(['code'], axis=1)
 	if len(res_modD2['time'])>0:
-		res_modD2['yes_data'] = 'TRUE'
+		res_modD2['pval'].replace(0,1e-16)
 		res_modD2['label'] = return_comorbid_label(res_modD2,dict_map)
-		res_modD2['RR'] = numpy.exp(res_modD2['RR'])
-		res_modD2['ratio_comorb'] = numpy.round(res_modD2['ratio_comorb'],3)
-		res_modD2['ratio_nocomorb'] = numpy.round(numpy.exp(res_modD2['ratio_nocomorb']),3)
-		res_modD2['irr'] = numpy.round(res_modD2['irr'])
-	else:
-		res_modD2['yes_data'] = 'FALSE'
+		res_modD2['RR'] = np.exp(res_modD2['RR'])
+		res_modD2['ratio_comorb'] = np.round(res_modD2['ratio_comorb'],3)
+		res_modD2['ratio_nocomorb'] = np.round(res_modD2['ratio_nocomorb'],3)
+		res_modD2['irr'] = np.round(res_modD2['irr'])
+		res_modD2['indexkey'] = list(range(1,len(res_modD2.index)+1))
+		res_modD2['count_a_count_ab'] = res_modD2['count_a']/(res_modD2['count_b']+res_modD2['count_a'])
 	return(res_modD2.to_dict(orient='records'))
-
 
 
 def get_map_codes(file):
@@ -118,9 +123,15 @@ def individual_page(code,dict_map=dict_map,min_number_of_individuals_for_reporti
 		abort(405)
 
 	incidenceT = process_incidence(code)
-	resmodT = process_resmod(code)
+	resmodT = process_resmod(code,res_modD=res_modD)
+	resmod_afterT = process_resmod(code,res_modD=res_mod_afterD)
 
-	return render_template("code.html", code=code, n_events=int(otherinfoT[0]['n_events']), prevalence=otherinfoT[0]['prevalence'], incidence=incidenceT, res_mod=resmodT, label=label_icds)
+	return render_template("code.html", code=code, 
+		n_events_M=int(otherinfoT[0]['n_events_M']),n_events_F=int(otherinfoT[0]['n_events_F']),n_events_TOT=int(otherinfoT[0]['n_events_TOT']),
+		n_afterbs_M=int(otherinfoT[0]['n_afterbs_M']),n_afterbs_F=int(otherinfoT[0]['n_afterbs_F']),n_afterbs_TOT=int(otherinfoT[0]['n_afterbs_TOT']),
+		prevalence_M=otherinfoT[0]['prevalence_M'],prevalence_F=otherinfoT[0]['prevalence_F'],prevalence_TOT=otherinfoT[0]['prevalence_TOT'],
+		meanage_M=int(otherinfoT[0]['age_mean_M']),meanage_F=int(otherinfoT[0]['age_mean_F']),meanage_TOT=int(otherinfoT[0]['age_mean_TOT']),
+		mort_M=otherinfoT[0]['mort_rate_M'],mort_F=otherinfoT[0]['mort_rate_F'],mort_TOT=otherinfoT[0]['mort_rate_TOT'],incidence=incidenceT, res_mod=resmodT, res_mod_after=resmod_afterT, label=label_icds)
 
 
 
@@ -140,7 +151,6 @@ def too_few_ind(code):
 	'too_few.html',
 	code=code
 	)
-
 
 
 if __name__ == '__main__':
