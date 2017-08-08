@@ -17,6 +17,9 @@
     font-weight: bold;
 }
 
+.card-block>h4  {
+    line-height: 2 !important;
+}
 
 .hist_bar {
   fill: orange;

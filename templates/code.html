@@ -29,9 +29,9 @@ function hist_chart(data) {
         .html(function(d) { 
             return "<p><b style='color:red' align='center' >" + d.label + "</b></p>" +
                     "<p> <strong>N with </strong>" + d.comorbidevent + ": " + d.count_a + "</p>" +
-                    "<p> <strong>IRx1000 py w </strong>" + d.comorbidevent + ": " + d.ratio_comorb + "</p>" +
-                    "<p> <strong>IRx1000 py w/o </strong>" + d.comorbidevent + ": " + d.ratio_nocomorb + "</p>" +
-                    "<p> <strong>P: </strong>" + (d.pval).toPrecision(2) + "</p>"
+                    "<p> <strong>With </strong>" + d.comorbidevent + ": " + d.count_a_count_ab + "</p>" +
+                    "<p> <strong>Without </strong>" + d.comorbidevent + ": " + d.count_c_count_cd + "</p>" +
+                    "<p> <strong>P: </strong>" + d.signlabel + "</p>"
              });
 
     var xAxis = d3.axisBottom(x);
@@ -107,9 +107,9 @@ function hist_chart_after(data) {
         .html(function(d) { 
             return "<p><b style='color:red' align='center' >" + d.label + "</b></p>" +
                     "<p> <strong>N with </strong>" + d.comorbidevent + ": " + d.count_a + "</p>" +
-                    "<p> <strong>IRx1000 py w </strong>" + d.comorbidevent + ": " + d.ratio_comorb + "</p>" +
-                    "<p> <strong>IRx1000 py w/o </strong>" + d.comorbidevent + ": " + d.ratio_nocomorb + "</p>" +
-                    "<p> <strong>P: </strong>" + (d.pval).toPrecision(2) + "</p>"
+                    "<p> <strong>With </strong>" + d.comorbidevent + ": " + d.count_a_count_ab + "</p>" +
+                    "<p> <strong>Without </strong>" + d.comorbidevent + ": " + d.count_c_count_cd + "</p>" +
+                    "<p> <strong>P: </strong>" + d.signlabel + "</p>"
              });
 
     var xAxis = d3.axisBottom(x);
@@ -188,9 +188,9 @@ function change_hist_chart(data) {
         .html(function(d) { 
             return "<p style='color:red' align='center'>" + d.label + "</p>" +
                     "<p> <strong>N with </strong>" + d.comorbidevent + ": " + d.count_a + "</p>" +
-                    "<p> <strong>IRx1000 py w </strong>" + d.comorbidevent + ": " + d.ratio_comorb + "</p>" +
-                    "<p> <strong>IRx1000 py w/o </strong>" + d.comorbidevent + ": " + d.ratio_nocomorb + "</p>" +
-                    "<p> <strong>P: </strong>" + (d.pval).toPrecision(2) + "</p>"
+                    "<p> <strong>With </strong>" + d.comorbidevent + ": " + d.count_a_count_ab + "</p>" +
+                    "<p> <strong>Without </strong>" + d.comorbidevent + ": " + d.count_c_count_cd + "</p>" +
+                    "<p> <strong>P: </strong>" + d.signlabel + "</p>"
              });
 
     var xAxis = d3.axisBottom(x);
@@ -298,9 +298,9 @@ function change_hist_chart_after(data) {
         .html(function(d) { 
             return "<p style='color:red' align='center'>" + d.label + "</p>" +
                     "<p> <strong>N with </strong>" + d.comorbidevent + ": " + d.count_a + "</p>" +
-                    "<p> <strong>IRx1000 py w </strong>" + d.comorbidevent + ": " + d.ratio_comorb + "</p>" +
-                    "<p> <strong>IRx1000 py w/o </strong>" + d.comorbidevent + ": " + d.ratio_nocomorb + "</p>" +
-                    "<p> <strong>P: </strong>" + (d.pval).toPrecision(2) + "</p>"
+                    "<p> <strong>With </strong>" + d.comorbidevent + ": " + d.count_a_count_ab + "</p>" +
+                    "<p> <strong>Without </strong>" + d.comorbidevent + ": " + d.count_c_count_cd + "</p>" +
+                    "<p> <strong>P: </strong>" + d.signlabel + "</p>"
              });
 
     var xAxis = d3.axisBottom(x);
@@ -468,9 +468,9 @@ function time_chart(data) {
 
 
 
-map_margin = {top: 20, right: 20, bottom: 70, left: 40},
-    map_chart_width = 300 - chart_margin.left - chart_margin.right,
-    map_chart_height = 600 - chart_margin.top - chart_margin.bottom;
+map_margin = {top: 5, right: 5, bottom: 5, left: 5},
+    map_chart_width = 200 - chart_margin.left - chart_margin.right,
+    map_chart_height = 400 - chart_margin.top - chart_margin.bottom;
 
 
 function map_chart() {
@@ -490,9 +490,9 @@ function map_chart() {
 
     var projection = d3.geoMercator()
       //.scale((1 << 22) / 2 / Math.PI)
-      .scale(1000)
+      .scale(850)
       .translate([map_chart_width / 2, map_chart_height / 2])
-      .center([24.408320099999997,64.8130752])
+      .center([23.208320099999997,66.8130752])
       //.translate([50, 700])
 
 
@@ -560,6 +560,10 @@ $(document).ready(function() {
         window.res_mod={{ res_mod|tojson|safe }};
         window.res_mod_after={{ res_mod_after|tojson|safe }};
         window.incidence={{ incidence|tojson|safe }};
+        window.mort_rate={{ mort_rate|tojson|safe }};
+        window.read_rate={{ read_rate|tojson|safe }};
+        window.com_comorb={{ com_comorb|tojson|safe }};
+
 
         var temp = res_mod.filter(function (obj) {
                 return obj.time === '8-999999999999';});
@@ -580,82 +584,29 @@ $(document).ready(function() {
 
         $('.hist_buttons').change(function () {
             var v1 = $(this).attr('id'); 
-            var v2 = $('.rr_buttons.active').attr('id')
 
             var data = window.res_mod
             var data_after = window.res_mod_after
+            
+            var temp = data.filter(function (obj) {
+            return obj.time === v1 & obj.RR >= 1;});
+            var data_query = temp.sort(function(a, b) {
+            return parseFloat(b.RR) - parseFloat(a.RR);});
 
-            if (v2 == "ge1")
-            {
-                var temp = data.filter(function (obj) {
-                return obj.time === v1 & obj.RR >= 1;});
-                var data_query = temp.sort(function(a, b) {
-                return parseFloat(b.RR) - parseFloat(a.RR);});
-
-                var temp2 = data_after.filter(function (obj) {
-                return obj.time === v1 & obj.RR >= 1;});
-                var data_query_after = temp2.sort(function(a, b) {
-                return parseFloat(b.RR) - parseFloat(a.RR);});
-            }
-
-            else
-            {
-                var temp = data.filter(function (obj) {
-                return obj.time === v1 & obj.RR < 1;});
-                var data_query = temp.sort(function(a, b) {
-                return parseFloat(a.RR) - parseFloat(b.RR);});
-
-                var temp2 = data_after.filter(function (obj) {
-                return obj.time === v1 & obj.RR < 1;});
-                var data_query_after = temp2.sort(function(a, b) {
-                return parseFloat(a.RR) - parseFloat(b.RR);});
-            }
+            var temp2 = data_after.filter(function (obj) {
+            return obj.time === v1 & obj.RR >= 1;});
+            var data_query_after = temp2.sort(function(a, b) {
+            return parseFloat(b.RR) - parseFloat(a.RR);});
 
             change_hist_chart(data_query.slice(0,20));
             change_hist_chart_after(data_query_after.slice(0,20));
-                
+            
+
+            
         });
+        // newvar2 =   {{ prevalence_F }} + 100
+        // $("#editable_div").html("<b>"+newvar2+"</b>")
 
-        $('.rr_buttons').change(function () {
-            var v1 = $('.hist_buttons.active').attr('id')
-            var v2 = $(this).attr('id'); 
-
-            var data = window.res_mod
-            var data_after = window.res_mod_after
-
-            if (v2 == "ge1")
-            {
-                var temp = data.filter(function (obj) {
-                return obj.time === v1 & obj.RR >= 1;});
-                var data_query = temp.sort(function(a, b) {
-                return parseFloat(b.RR) - parseFloat(a.RR);});
-
-                var temp = data_after.filter(function (obj) {
-                return obj.time === v1 & obj.RR >= 1;});
-                var data_query_after = temp.sort(function(a, b) {
-                return parseFloat(b.RR) - parseFloat(a.RR);});
-            }
-
-            else
-            {
-                var temp = data.filter(function (obj) {
-                return obj.time === v1 & obj.RR < 1;});
-                var data_query = temp.sort(function(a, b) {
-                return parseFloat(a.RR) - parseFloat(b.RR);});
-
-
-                var temp = data_after.filter(function (obj) {
-                return obj.time === v1 & obj.RR >= 1;});
-                var data_query_after = temp.sort(function(a, b) {
-                return parseFloat(b.RR) - parseFloat(a.RR);});
-            }
-
-            console.log(data_query)
-            console.log(data_query_after)
-            change_hist_chart(data_query.slice(0,20));
-            change_hist_chart_after(data_query_after.slice(0,20));
-               
-        });
 });
 
 
@@ -671,32 +622,34 @@ $(document).ready(function() {
         <hr/>
     </div>
 
-    <div class="col-md-10 col-xs-offset-1 col-md-offset-1">
+    
+    <div class="col-md-8 col-xs-offset-1 col-md-offset-1">
+      <h3> Descriptive statistics </h3>
         <table class="table">
             <thead>
                 <tr>
                     <th style="padding-top: 4px;"> </th>
-                    <th style="padding-top: 4px;">Female </th>
-                    <th style="padding-top: 4px;">Male </th>
-                    <th style="padding-top: 4px;">Total </th>
+                    <th style="padding-top: 4px;"> Male </th>
+                    <th style="padding-top: 4px;"> Female </th>
+                    <th style="padding-top: 4px;"> Total </th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <td> N. individuals </td>
-                    <td> {{ n_events_M }} </td>
-                    <td> {{ n_events_F }} </td>
+                    <td> {{ n_events_M }} ( {{n_events_M_per}}%)</td>
+                    <td> {{ n_events_F }} ( {{n_events_F_per}}%)</td>
                     <td> {{ n_events_TOT }} </td>
                 </tr>
                 <tr>
                     <td> N. individual with event after baseline </td>
-                    <td> {{ n_afterbs_M }} </td>
-                    <td> {{ n_afterbs_F }} </td>
+                    <td> {{ n_afterbs_M }} ( {{n_afterbs_M_per}}%) </td>
+                    <td> {{ n_afterbs_F }} ( {{n_afterbs_F_per}}%) </td>
                     <td> {{ n_afterbs_TOT }} </td>
                 </tr>
                 <tr>
                     <td> Prevalence (%) </td>
-                    <td> {{ prevalence_M }} </td>
+                    <td > {{ prevalence_M }} </td>
                     <td> {{ prevalence_F }} </td>
                     <td> {{ prevalence_TOT }} </td>
                 </tr>
@@ -706,29 +659,125 @@ $(document).ready(function() {
                     <td> {{ meanage_F }} </td>
                     <td> {{ meanage_TOT }} </td>
                 </tr>
-                <tr>
-                    <td> Mortality Rate (x1000 people) </td>
-                    <td> {{ mort_M }} </td>
-                    <td> {{ mort_F }} </td>
-                    <td> {{ mort_TOT }} </td>
+                 <tr>
+                    <td> Most common comorbidities (% and number of individuals) </td>
+                    <td width="138"> {{ com_comorb[0]["value"][0] }} </td>
+                    <td width="138"> {{ com_comorb[1]["value"][0] }} </td>
+                    <td width="138"> {{ com_comorb[2]["value"][0] }} </td>
                 </tr>
             </tbody>
         </table>
     </div> 
-    <div class="col-md-10 col-xs-offset-1 col-md-offset-1">
-        <h3>Report</h3>
-        <div class="card">
-            <div class="card-block">
-            <h4> {{ code }} is more prevalent among old males,
-            the ICD code is mostly diagnosed in Helsinki area and there have not been
-            significant changes in the past 10 years.
-
-            There is highly chance that individuals with this ICD code will be diagnosed with
-            C18 in the near future.</h4>
-            </div>
-        </div>
-        <hr/>
-    </div> 
+    
+    {% if mort_rate %}
+    <div class="row">
+      <div class="col-md-4 col-xs-offset-1 col-md-offset-1">
+          <h3> 5-year mortality </h3>
+          <table class="table">
+              <thead>
+                  <tr>
+                      <th style="padding-top: 4px;"> </th>
+                      <th style="padding-top: 4px;"> </th>
+                      <th style="padding-top: 4px;"> </th>
+                  </tr>
+              </thead>
+              <tbody>
+                  <tr>
+                      <td> Hazard Ratio </td>
+                      <td colspan="2"  style="text-align:center;"> {{ mort_rate[0].RR }} </td>
+                  </tr>
+                  <tr>
+                      <td rowspan ="6" > Absolute Risk </td>
+                      <td>  Men - 40 y. </td>
+                      <td>  {{mort_rate[0].abs_40_M }} </td>
+                  </tr>
+                  <tr>
+                      <td> Women - 40 y. </td>
+                      <td> {{mort_rate[0].abs_40_F }} </td>
+                  </tr>
+                  <tr>
+                      <td> Men - 50 y. </td>
+                      <td> {{mort_rate[0].abs_50_M }} </td>
+                  </tr>
+                  <tr>
+                      <td> Women - 50 y. </td>
+                      <td> {{mort_rate[0].abs_50_F }} </td>
+                  </tr>
+                  <tr>
+                      <td> Men - 60 y. </td>
+                      <td> {{mort_rate[0].abs_60_M }} </td>
+                  </tr>
+                  <tr>
+                      <td> Women - 60 y. </td>
+                      <td> {{mort_rate[0].abs_60_F }} </td>
+                  </tr>
+              </tbody>
+          </table>
+      </div> 
+    {% endif %}
+    {% if read_rate %}
+      <div class="col-md-4 col-xs-offset-1 col-md-offset-1">
+          <h3> 30-days in-patient readmission </h3>
+          <table class="table">
+              <thead>
+                  <tr>
+                      <th style="padding-top: 4px;"> </th>
+                      <th style="padding-top: 4px;"> </th>
+                      <th style="padding-top: 4px;"> </th>
+                  </tr>
+              </thead>
+              <tbody>
+                  <tr>
+                      <td> Readmitted/total </td>
+                      <td colspan="2"  style="text-align:center;"> {{read_rate[0].readmitted_prop}} </td>
+                  </tr>
+                  <tr>
+                      <td rowspan ="6" > Probability </td>
+                      <td>  Men - 40 y. </td>
+                      <td>  {{read_rate[0].abs_40_M }} </td>
+                  </tr>
+                  <tr>
+                      <td> Women - 40 y. </td>
+                      <td> {{read_rate[0].abs_40_F }} </td>
+                  </tr>
+                  <tr>
+                      <td> Men - 50 y. </td>
+                      <td> {{read_rate[0].abs_50_M }} </td>
+                  </tr>
+                  <tr>
+                      <td> Women - 50 y. </td>
+                      <td> {{read_rate[0].abs_50_F }} </td>
+                  </tr>
+                  <tr>
+                      <td> Men - 60 y. </td>
+                      <td> {{read_rate[0].abs_60_M }} </td>
+                  </tr>
+                  <tr>
+                      <td> Women - 60 y. </td>
+                      <td> {{read_rate[0].abs_60_F }} </td>
+                  </tr>
+              </tbody>
+          </table>
+      </div> 
+    {% endif %}
+    </div>
+    <hr/>
+    <div class="row">
+      <div class="col-md-5  col-xs-offset-1 col-md-offset-1">
+          <h3>Report</h3>
+          <div class="card">
+              <div class="card-block">
+                  <h4> {{ report_out }}
+                </h4>
+              </div>
+          </div>
+          <hr/>
+      </div>
+      <div class="col-md-5  col-xs-offset-1 col-md-offset-1">
+          <h3>Map</h3>
+              <svg style="width: 200; height:400" class="hidden-xs" id="svg_map_chart"/>
+      </div>
+    </div>
     <div class="row">
         <div class="col-md-10 col-xs-offset-1 col-md-offset-1">
             <h3>Hazard Ratio Summary</h3>
@@ -763,28 +812,7 @@ $(document).ready(function() {
                         </button>
 
                     </span>
-                </span>
-
-                <span style="float:center;">
-
-                    <label for="rr_buttons">
-                        Risk ratio:
-                    </label>
-
-                    <span class="btn-group" data-toggle="buttons" id="rr_buttons">
-
-                        <button class="btn btn-primary active rr_buttons"
-                              id="ge1" data-tooltip="Show only codes with RR >=1 1">
-                          <input type="radio">HR > 1</input>
-                        </button>
-
-                        <button class="btn btn-primary rr_buttons"
-                              id="lt1" data-tooltip="Show only codes with RR < 1">
-                          <input type="radio">HR < 1</input>
-                        </button>
-
-                    </span>
-                </span>    
+                </span> 
                 <br>
                 <br>
                 <h4>ICD codes (N>10) observed before {{ code }} </h4>
@@ -809,93 +837,9 @@ $(document).ready(function() {
             </span>
         </div>
     </div>
-    <div class="row">
-        <div class="col-md-3 col-md-offset-1">
-            <h3>Map</h3>
-            <span style="overflow-x: scroll; display: inline-block; width: 691.667px;">
-                <svg style="width: 300; height:600" class="hidden-xs" id="svg_map_chart"/>
-            </span>
-        </div>
-    </div>
+
 </div>
 
 
-
-<!-- 
-<div class="container-fluid">
-    <div class="col-md-10 col-xs-offset-0 col-md-offset-0">
-        <div>
-            <style>
-
-            .hist_bar {
-              fill: orange;
-            }
-
-            .hist_bar:hover {
-              fill: orangeRed;
-            }
-
-
-            div.tooltip {
-                position:absolute;width:40px;
-                height:auto;padding:10px;
-                background-color:white;
-                -webkit-border-radius:10px;
-                -moz-border-radius:10px;
-                border-radius:10px;
-                -webkit-box-shadow:4px 4px 10px rgba(0,0,0,0.4);
-                -moz-box-shadow:4px 4px 10px rgba(0,0,0,0.4);
-                box-shadow:4px 4px 10px rgba(0,0,0,0.4);
-                pointer-events:none;}
-
-
-            </style>
-
-            <svg id="svg_hist_chart" style="width: 800px; height:300px" />
-        </div>
-    </div>
-    <hr/>
-</div>
-<div class="container-fluid">
-    <div class="col-md-10 col-xs-offset-0 col-md-offset-0">
-        <div>
-            <svg id="svg_time_chart" style="width: 800px; height:300px" />
-        </div>
-    </div>
-    <hr/>
-</div>
-<div class="container-fluid">
-    <div class="col-md-10 col-xs-offset-0 col-md-offset-0">
-        <div>
-            <style> 
-
-/*            .path {
-              fill: orange;
-            }*/
-
-           .path:hover
-            {fill: orangeRed;
-            }
-
-            div2.tooltip {
-                position:absolute;width:100px;
-                height:auto;padding:10px;
-                background-color:white;
-                -webkit-border-radius:10px;
-                -moz-border-radius:10px;
-                border-radius:10px;
-                -webkit-box-shadow:4px 4px 10px rgba(0,0,0,0.4);
-                -moz-box-shadow:4px 4px 10px rgba(0,0,0,0.4);
-                box-shadow:4px 4px 10px rgba(0,0,0,0.4);
-                pointer-events:none;}
-
-            </style>
-
-    
-            <svg id="svg_map_chart" style="width: 300px; height:600px" />
-        </div>
-    </div>
-</div>
-</div> -->
 
 {% endblock %}
