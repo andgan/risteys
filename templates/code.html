@@ -5,553 +5,30 @@
 <script type="text/javascript">
 
 
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+
+
+
+
+// Define margins for the histogram
 chart_margin = {top: 20, right: 20, bottom: 70, left: 50},
-    hist_chart_width = 800 - chart_margin.left - chart_margin.right,
+    hist_chart_width = 600 - chart_margin.left - chart_margin.right,
     hist_chart_height = 300 - chart_margin.top - chart_margin.bottom;
 
 
+// Define margins for the small histograms
+chart_margin_small = {top: 20, right: 40, bottom: 40, left: 40},
+    hist_chart_small_width = 350 - chart_margin_small.left - chart_margin_small.right,
+    hist_chart_small_height = 200 - chart_margin_small.top - chart_margin_small.bottom;
 
-function hist_chart(data) {
 
-    
-    var x = d3.scaleBand()
-        .rangeRound([0, hist_chart_width])
-        .padding(0.1)
-        .domain(data.map(function(d) { return d.comorbidevent; }));
-
-    var y = d3.scaleLinear()
-        .range([hist_chart_height, 0])
-        .domain([0, d3.max(data, function(d) { return d.RR; })]);
-
-    var tip = d3.tip()
-        .attr('class', 'd3-tip')
-        //.offset([120, 0])
-        .html(function(d) { 
-            return "<p><b style='color:red' align='center' >" + d.label + "</b></p>" +
-                    "<p> <strong>N with </strong>" + d.comorbidevent + ": " + d.count_a + "</p>" +
-                    "<p> <strong>With </strong>" + d.comorbidevent + ": " + d.count_a_count_ab + "</p>" +
-                    "<p> <strong>Without </strong>" + d.comorbidevent + ": " + d.count_c_count_cd + "</p>" +
-                    "<p> <strong>P: </strong>" + d.signlabel + "</p>"
-             });
-
-    var xAxis = d3.axisBottom(x);
-
-    var yAxis = d3.axisLeft(y);
-
-
-    var svg = d3.select('#svg_hist_chart')
-        .attr("width", hist_chart_width)
-        .attr("height", hist_chart_height)
-        .append("g")
-        .attr('id', 'inner_graph')
-        .attr("transform", "translate(" + chart_margin.left + "," + chart_margin.top + ")");
-
-    svg.call(tip);
-
-    svg.selectAll("bar")
-        .data(data, function(d){return d.indexkey;})
-        .enter()
-        .append("rect")
-        .attr("class", "hist_bar")
-        .attr("x", function(d) { return x(d.comorbidevent); })
-        .attr("y", function(d) { return y(d.RR); })
-        .attr("width", x.bandwidth())
-        .attr("height", function(d) { return (hist_chart_height - y(d.RR)); })
-        .on('mouseover', tip.show)
-        .on('mouseout', tip.hide)
-
-    svg.append("g")
-        .attr("class", "x axis")
-        .attr("transform", "translate(0," + hist_chart_height + ")")
-        .call(xAxis);
-    
-    svg.append("g")
-        .attr("class", "y axis")
-        .call(yAxis);
-
-    svg.append("text") 
-      .attr("id", "xlabel")             
-      .attr("transform",
-            "translate(" + (hist_chart_width/2) + " ," + (hist_chart_height + chart_margin.top + 20) + ")")
-      .style("text-anchor", "middle")
-      .text("Comorbid ICD");
-
-    svg.append("text")
-      .attr("id", "ylabel")   
-      .attr("transform", "rotate(-90)")
-      .attr("y", 0 - chart_margin.left)
-      .attr("x",0 - (hist_chart_height / 2))
-      .attr("dy", "1em")
-      .style("text-anchor", "middle")
-      .text("Hazard Ratio"); 
-
-}
-
-
-
-function hist_chart_after(data) {
-
-    
-    var x = d3.scaleBand()
-        .rangeRound([0, hist_chart_width])
-        .padding(0.1)
-        .domain(data.map(function(d) { return d.comorbidevent; }));
-
-    var y = d3.scaleLinear()
-        .range([hist_chart_height, 0])
-        .domain([0, d3.max(data, function(d) { return d.RR; })]);
-
-    var tip = d3.tip()
-        .attr('class', 'd3-tip')
-        //.offset([120, 0])
-        .html(function(d) { 
-            return "<p><b style='color:red' align='center' >" + d.label + "</b></p>" +
-                    "<p> <strong>N with </strong>" + d.comorbidevent + ": " + d.count_a + "</p>" +
-                    "<p> <strong>With </strong>" + d.comorbidevent + ": " + d.count_a_count_ab + "</p>" +
-                    "<p> <strong>Without </strong>" + d.comorbidevent + ": " + d.count_c_count_cd + "</p>" +
-                    "<p> <strong>P: </strong>" + d.signlabel + "</p>"
-             });
-
-    var xAxis = d3.axisBottom(x);
-
-    var yAxis = d3.axisLeft(y);
-
-
-    var svg = d3.select('#svg_hist_chart_after')
-        .attr("width", hist_chart_width)
-        .attr("height", hist_chart_height)
-        .append("g")
-        .attr('id', 'inner_graph')
-        .attr("transform", "translate(" + chart_margin.left + "," + chart_margin.top + ")");
-
-    svg.call(tip);
-
-    svg.selectAll("bar")
-        .data(data, function(d){return d.indexkey;})
-        .enter()
-        .append("rect")
-        .attr("class", "hist_bar")
-        .attr("x", function(d) { return x(d.comorbidevent); })
-        .attr("y", function(d) { return y(d.RR); })
-        .attr("width", x.bandwidth())
-        .attr("height", function(d) { return (hist_chart_height - y(d.RR)); })
-        .on('mouseover', tip.show)
-        .on('mouseout', tip.hide)
-
-    svg.append("g")
-        .attr("class", "x axis")
-        .attr("transform", "translate(0," + hist_chart_height + ")")
-        .call(xAxis);
-    
-    svg.append("g")
-        .attr("class", "y axis")
-        .call(yAxis);
-
-    svg.append("text") 
-      .attr("id", "xlabel")             
-      .attr("transform",
-            "translate(" + (hist_chart_width/2) + " ," + (hist_chart_height + chart_margin.top + 20) + ")")
-      .style("text-anchor", "middle")
-      .text("Comorbid ICD");
-
-    svg.append("text")
-      .attr("id", "ylabel")   
-      .attr("transform", "rotate(-90)")
-      .attr("y", 0 - chart_margin.left)
-      .attr("x",0 - (hist_chart_height / 2))
-      .attr("dy", "1em")
-      .style("text-anchor", "middle")
-      .text("Hazard Ratio"); 
-
-
-}
-
-
-
-function change_hist_chart(data) {
-
-    // if (data[metric].length > 0)
-    // {
-
-    
-    var x = d3.scaleBand()
-        .rangeRound([0, hist_chart_width])
-        .padding(0.1)
-        .domain(data.map(function(d) { return d.comorbidevent; }));
-
-    var y = d3.scaleLinear()
-        .range([hist_chart_height, 0])
-        .domain([0, d3.max(data, function(d) { return d.RR; })]);
-
-    var tip = d3.tip()
-        .attr('class', 'd3-tip')
-        .html(function(d) { 
-            return "<p style='color:red' align='center'>" + d.label + "</p>" +
-                    "<p> <strong>N with </strong>" + d.comorbidevent + ": " + d.count_a + "</p>" +
-                    "<p> <strong>With </strong>" + d.comorbidevent + ": " + d.count_a_count_ab + "</p>" +
-                    "<p> <strong>Without </strong>" + d.comorbidevent + ": " + d.count_c_count_cd + "</p>" +
-                    "<p> <strong>P: </strong>" + d.signlabel + "</p>"
-             });
-
-    var xAxis = d3.axisBottom(x);
-
-    var yAxis = d3.axisLeft(y);
-
-    
-    var svg = d3.select('#svg_hist_chart').select('#inner_graph');
-
-    svg.call(tip);
-
-    var svg2 = svg.selectAll("rect")
-        .data(data, function(d){return d.indexkey;})
-
-    svg2.exit().remove();
-
-    svg2.enter().append("rect").attr("class", "hist_bar")
-        .merge(svg2)
-        .attr("x", function(d) { return x(d.comorbidevent); })
-        .attr("y", function(d) { return y(d.RR); })
-        .attr("width", x.bandwidth())
-        .attr("height", function(d) { return hist_chart_height - y(d.RR); })
-        .on('mouseover', tip.show)
-        .on('mouseout', tip.hide)
-
-    var yAxis = d3.axisLeft(y);
-
-    svg.select(".y.axis")
-        .transition()
-        .duration(200)
-        .call(yAxis);
-
-    var xAxis = d3.axisBottom(x);
-
-    svg.select(".x.axis")
-        .transition()
-        .duration(200)
-        .call(xAxis);
-
-
-
-
-    d3.select("#ndtext").remove()
-
-    if (d3.select("#xlabel").empty())
-    {
-
-    svg.append("text") 
-      .attr("id", "xlabel")             
-      .attr("transform",
-            "translate(" + (hist_chart_width/2) + " ," + (hist_chart_height + chart_margin.top + 20) + ")")
-      .style("text-anchor", "middle")
-      .text("Comorbid ICD");
-
-    svg.append("text")
-      .attr("id", "ylabel")   
-      .attr("transform", "rotate(-90)")
-      .attr("y", 0 - chart_margin.left)
-      .attr("x",0 - (hist_chart_height / 2))
-      .attr("dy", "1em")
-      .style("text-anchor", "middle")
-      .text("Hazard Ratio"); 
-    }
-
-    if (data.length===0)
-    {
-        svg.append("text")
-          .attr("id", "ndtext")         
-          .attr("transform",
-            "translate(" + (hist_chart_width/2) + " ," + (hist_chart_height - 80) + ")")
-          .style("font-size", "26px")
-          .style('font-weight', 'bold')
-          .style("text-anchor", "middle")
-          .style('text-color', '#525252')
-          .text("No data available");
-
-          d3.select("#xlabel").remove()
-          d3.select("#ylabel").remove()
-    }
-
-
-      
-}
-
-
-
-
-function change_hist_chart_after(data) {
-
-    // if (data[metric].length > 0)
-    // {
-
-    
-    var x = d3.scaleBand()
-        .rangeRound([0, hist_chart_width])
-        .padding(0.1)
-        .domain(data.map(function(d) { return d.comorbidevent; }));
-
-    var y = d3.scaleLinear()
-        .range([hist_chart_height, 0])
-        .domain([0, d3.max(data, function(d) { return d.RR; })]);
-
-    var tip = d3.tip()
-        .attr('class', 'd3-tip')
-        .html(function(d) { 
-            return "<p style='color:red' align='center'>" + d.label + "</p>" +
-                    "<p> <strong>N with </strong>" + d.comorbidevent + ": " + d.count_a + "</p>" +
-                    "<p> <strong>With </strong>" + d.comorbidevent + ": " + d.count_a_count_ab + "</p>" +
-                    "<p> <strong>Without </strong>" + d.comorbidevent + ": " + d.count_c_count_cd + "</p>" +
-                    "<p> <strong>P: </strong>" + d.signlabel + "</p>"
-             });
-
-    var xAxis = d3.axisBottom(x);
-
-    var yAxis = d3.axisLeft(y);
-
-    
-    var svg = d3.select('#svg_hist_chart_after').select('#inner_graph');
-
-    svg.call(tip);
-
-    var svg2 = svg.selectAll("rect")
-        .data(data, function(d){return d.indexkey;})
-
-    svg2.exit().remove();
-
-    svg2.enter().append("rect").attr("class", "hist_bar")
-        .merge(svg2)
-        .attr("x", function(d) { return x(d.comorbidevent); })
-        .attr("y", function(d) { return y(d.RR); })
-        .attr("width", x.bandwidth())
-        .attr("height", function(d) { return hist_chart_height - y(d.RR); })
-        .on('mouseover', tip.show)
-        .on('mouseout', tip.hide)
-
-    var yAxis = d3.axisLeft(y);
-
-    svg.select(".y.axis")
-        .transition()
-        .duration(200)
-        .call(yAxis);
-
-    var xAxis = d3.axisBottom(x);
-
-    svg.select(".x.axis")
-        .transition()
-        .duration(200)
-        .call(xAxis);
-
-
-
-
-    d3.select("#ndtext").remove()
-
-    if (d3.select("#xlabel").empty())
-    {
-
-    svg.append("text") 
-      .attr("id", "xlabel")             
-      .attr("transform",
-            "translate(" + (hist_chart_width/2) + " ," + (hist_chart_height + chart_margin.top + 20) + ")")
-      .style("text-anchor", "middle")
-      .text("Comorbid ICD");
-
-    svg.append("text")
-      .attr("id", "ylabel")   
-      .attr("transform", "rotate(-90)")
-      .attr("y", 0 - chart_margin.left)
-      .attr("x",0 - (hist_chart_height / 2))
-      .attr("dy", "1em")
-      .style("text-anchor", "middle")
-      .text("Hazard Ratio"); 
-    }
-
-    if (data.length===0)
-    {
-        svg.append("text")
-          .attr("id", "ndtext")         
-          .attr("transform",
-            "translate(" + (hist_chart_width/2) + " ," + (hist_chart_height - 80) + ")")
-          .style("font-size", "26px")
-          .style('font-weight', 'bold')
-          .style("text-anchor", "middle")
-          .style('text-color', '#525252')
-          .text("No data available");
-
-          d3.select("#xlabel").remove()
-          d3.select("#ylabel").remove()
-    }
-
-
-      
-}
-
-
-
-function time_chart(data) {
-
-
-    var x = d3
-            .scaleTime()
-            .range([0, hist_chart_width]);
-            
-    var y = d3.scaleLinear()
-            .range([hist_chart_height, 0]);
-
-
-
-
-    var svg = d3.select('#svg_time_chart')
-        .attr("width", hist_chart_width)
-        .attr("height", hist_chart_height)
-        .append("g")
-        .attr("transform", "translate(" + chart_margin.left + "," + chart_margin.top + ")");
-
-
-    var parseTime = d3.timeParse("%Y");
-
-
-
-    var valueline = d3.line()
-         .x(function(d) { return x(d.year); })
-         .y(function(d) { return y(d.incidence); });
-
-
-
-    data.map(function(d) {
-      d.year = parseTime(d.year)
-      d.incidence = +d.incidence
-     });
-
-
-    x.domain(d3.extent(data, function(d) { return d.year; }));
-    y.domain([0, d3.max(data, function(d) { return d.incidence; })]);
-
-
-
-    svg.append("path")
-      .datum(data)
-      .attr("fill", "none")
-      .attr("stroke", "steelblue")
-      .attr("stroke-linejoin", "round")
-      .attr("stroke-linecap", "round")
-      .attr("stroke-width", 1.5)
-      .attr("d", valueline);
-
-
-    svg.append("g")
-      .attr("class", "axis axis--x")
-      .attr("transform", "translate(0," + hist_chart_height + ")")
-      .call(d3.axisBottom(x))
-
-    svg.append("g")
-      .attr("class", "axis axis--y")
-      .call(d3.axisLeft(y))
-
-
-    svg.append("text")           
-      .attr("transform",
-            "translate(" + (hist_chart_width/2) + " ," + (hist_chart_height + chart_margin.top + 20) + ")")
-      .style("text-anchor", "middle")
-      .text("Year");
-
-    svg.append("text")
-      .attr("transform", "rotate(-90)")
-      .attr("y", -5 - chart_margin.left)
-      .attr("x",0 - (hist_chart_height / 2))
-      .attr("dy", "1em")
-      .style("text-anchor", "middle")
-      .text("Incidence proportion"); 
-
-
-}
-
-
-
-
-map_margin = {top: 5, right: 5, bottom: 5, left: 5},
+// Define margins for map
+map_margin = {top: 5, right: 5, bottom: 0, left: 5},
     map_chart_width = 200 - chart_margin.left - chart_margin.right,
     map_chart_height = 400 - chart_margin.top - chart_margin.bottom;
 
-
-function map_chart() {
-
-
-
-    var svg = d3.select('#svg_map_chart')
-        .attr("width", map_chart_width)
-        .attr("height", map_chart_height)
-        .append("g")
-
-
-    var color=d3.scaleQuantize()
-    .range(["rgb(237,248,233)","rgb(186,228,179)","rgb(116,196,118)","rgb(49,163,84)","rgb(0,109,44)"])
-    .domain([0,100]);
-
-
-    var projection = d3.geoMercator()
-      //.scale((1 << 22) / 2 / Math.PI)
-      .scale(850)
-      .translate([map_chart_width / 2, map_chart_height / 2])
-      .center([23.208320099999997,66.8130752])
-      //.translate([50, 700])
-
-
-    var path = d3.geoPath()
-      .projection(projection);
-
-
-    var div2 = d3.select("body").append("div2")
-    .attr("class", "tooltip")
-    .style("opacity", 0);
-
-
-    d3.json("/static/finland.geojson", function(err, geojson) {
-
-        d3.csv("/static/kuntavakiluku.csv",
-        function(data){
-            color.domain([d3.min(data,function(d){return d.Vakiluku;}),d3.max(data,function(d){return d.Vakiluku;})]);
-
-            for(var i=0;i<data.length;i++){
-                var dataState=data[i].Kunta;var dataValue=parseInt(data[i].Vakiluku);
-                for(var j=0;j<geojson.features.length;j++){var jsonState=geojson.features[j].properties.text;
-                    if(dataState==jsonState){geojson.features[j].properties.value=dataValue;break;}}}
-
-            var features = geojson.features;
-
-              // Draw each province as a path
-            svg.selectAll("path")
-                  .data(features)
-                  .enter().append('path')
-                  .attr('d', path)
-                  .style("stroke","rgb(0,109,44)")
-                  .style('fill', setNormalColor)
-                  .on("mouseover",function(d){
-                    d3.select(this)
-                       .style("fill", "orange");
-                    div2.transition()
-                        .duration(200)
-                         .style("opacity", 1);
-                    div2.html("<span style='color:red'>" + d.properties.text + ": " + d.properties.value + "</span>")
-                         .style("left", (d3.event.pageX) + "px")
-                         .style("top", (d3.event.pageY - 28) + "px");
-                   })
-                  .on("mouseout", function(d) {
-                   div2.transition()
-                     .duration(500)
-                     .style("opacity", setNormalColor(d));
-                   d3.select(this)
-                     .style("fill", setNormalColor(d));   
-                   });
-
-        });      
-    });
-
-
-
-var setNormalColor=function(d){var value=d.properties.value;if(value){return color(value);}else{return"red";}};
-
-
-}
 
 
 
@@ -562,8 +39,15 @@ $(document).ready(function() {
         window.incidence={{ incidence|tojson|safe }};
         window.mort_rate={{ mort_rate|tojson|safe }};
         window.read_rate={{ read_rate|tojson|safe }};
-        window.com_comorb={{ com_comorb|tojson|safe }};
+        window.rfreport={{ rfreport|tojson|safe }};
+        com_comorb={{ com_comorb|safe }};
+        window.geoevent={{ geoevent|tojson|safe }};
+        window.histbin={{ histbin|tojson|safe }};
+        window.indsex={{ indsex|tojson|safe }};
+        window.ukbmeans={{ ukbmeans|tojson|safe }};
+        window.code={{ code|tojson|safe }};
 
+        console.log(window.rfreport)
 
         var temp = res_mod.filter(function (obj) {
                 return obj.time === '8-999999999999';});
@@ -576,10 +60,67 @@ $(document).ready(function() {
         var first_datain_after = temp.sort(function(a, b) {
                 return parseFloat(b.RR) - parseFloat(a.RR);});
 
-        hist_chart(first_datain.slice(0,20))
-        hist_chart_after(first_datain_after.slice(0,20))
-        time_chart(window.incidence)
-        map_chart()
+
+        // Plot first 20 ICD codes for the histogram
+        hist_chart(first_datain.slice(0,20), hist_chart_width, hist_chart_height, chart_margin, id='#svg_hist_chart')
+        hist_chart(first_datain_after.slice(0,20),  hist_chart_width, hist_chart_height, chart_margin, id='#svg_hist_chart_after')
+
+        // Plot time chart
+        time_chart(window.incidence,  hist_chart_width, hist_chart_height, chart_margin, id='#svg_time_chart')
+
+
+        // Plot risk factors charts 
+
+        var hist1 = window.histbin[0]
+        hist_chart_bins(hist1,hist_chart_small_width, hist_chart_small_height, chart_margin_small,"BMI",id='#bin_chart1')
+
+        add_line_to_hist_chart_bins(hist1,window.rfreport[0], 'bmi_mean_M','bmi_lci_M','bmi_uci_M','bmi_label_M',window.ukbmeans[0]['bmi_male_mean'],hist_chart_small_width, hist_chart_small_height, chart_margin_small,id='#bin_chart1')
+
+
+
+        var hist2 = window.histbin[1]
+        hist_chart_bins(hist2,hist_chart_small_width, hist_chart_small_height, chart_margin_small,"BMI",id='#bin_chart2')
+
+        add_line_to_hist_chart_bins(hist2,window.rfreport[0], 'bmi_mean_F','bmi_lci_F','bmi_uci_F','bmi_label_F',window.ukbmeans[0]['bmi_female_mean'],hist_chart_small_width, hist_chart_small_height, chart_margin_small,id='#bin_chart2')
+
+
+
+        var hist3 = window.histbin[2]
+        hist_chart_bins(hist3,hist_chart_small_width, hist_chart_small_height, chart_margin_small,"SBP",id='#bin_chart3')
+
+        add_line_to_hist_chart_bins(hist3,window.rfreport[0], 'sbp_mean_M','sbp_lci_M','sbp_uci_M','sbp_label_M',window.ukbmeans[0]['sbp_male_mean'],hist_chart_small_width, hist_chart_small_height, chart_margin_small,id='#bin_chart3')
+
+
+
+        var hist4 = window.histbin[3]
+        hist_chart_bins(hist4,hist_chart_small_width, hist_chart_small_height, chart_margin_small,"SBP",id='#bin_chart4')
+
+        add_line_to_hist_chart_bins(hist4,window.rfreport[0], 'sbp_mean_F','sbp_lci_F','sbp_uci_F','sbp_label_F',window.ukbmeans[0]['sbp_female_mean'],hist_chart_small_width, hist_chart_small_height, chart_margin_small,id='#bin_chart4')
+
+
+
+        var Mtip = Math.round(window.ukbmeans[0]['smoke_male_mean']*100)
+        dataTM = [
+        {label:"UKBB", value:window.ukbmeans[0]['smoke_male_mean']*100, labtip: Mtip+="%"},
+        {label:String(window.code), value:window.rfreport[0]['smk_mean_M']*100, labtip: window.rfreport[0]['smk_label_M']}
+        ];
+
+        var Ftip = Math.round(window.ukbmeans[0]['smoke_female_mean']*100)
+
+        dataTF = [
+        {label:"UKBB", value:window.ukbmeans[0]['smoke_female_mean']*100, labtip: Ftip+="%"},
+        {label:String(window.code), value:window.rfreport[0]['smk_mean_F']*100, labtip: window.rfreport[0]['smk_label_F']}
+        ];
+
+
+        bar_chart(dataTM,hist_chart_small_width, hist_chart_small_height, chart_margin_small,id='#smoke_chart1')
+
+        
+        bar_chart(dataTF,hist_chart_small_width, hist_chart_small_height, chart_margin_small,id='#smoke_chart2')
+
+
+        // Plot map
+        map_chart(window.geoevent,map_chart_width, map_chart_height, map_margin, id='#svg_map_chart')
 
 
         $('.hist_buttons').change(function () {
@@ -598,12 +139,20 @@ $(document).ready(function() {
             var data_query_after = temp2.sort(function(a, b) {
             return parseFloat(b.RR) - parseFloat(a.RR);});
 
-            change_hist_chart(data_query.slice(0,20));
-            change_hist_chart_after(data_query_after.slice(0,20));
-            
-
-            
+            change_hist_chart(data_query.slice(0,20), hist_chart_width, hist_chart_height, chart_margin, id='#svg_hist_chart');
+            change_hist_chart(data_query_after.slice(0,20), hist_chart_width, hist_chart_height, chart_margin,id='#svg_hist_chart_after');
+             
         });
+
+
+        $('.timetrend_buttons').change(function () {
+            var v1 = $(this).attr('id'); 
+
+            time_chart_change(window.incidence, v1, hist_chart_width, hist_chart_height, chart_margin, id='#svg_time_chart')
+  
+        });
+
+
         // newvar2 =   {{ prevalence_F }} + 100
         // $("#editable_div").html("<b>"+newvar2+"</b>")
 
@@ -615,64 +164,73 @@ $(document).ready(function() {
 
 
 
-<div class="container-fluid">
+<div class="container-fluid col-xs-offset-1 col-md-offset-1">
 
-    <div class="col-md-10 col-xs-offset-1 col-md-offset-1">
+    <div class="col-md-10">
         <h1> ICD code: <a href="http://apps.who.int/classifications/icd10/browse/2016/en#/{{ code }}">{{ code }} </a> - {{ label }} </h1>
         <hr/>
     </div>
 
-    
-    <div class="col-md-8 col-xs-offset-1 col-md-offset-1">
-      <h3> Descriptive statistics </h3>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th style="padding-top: 4px;"> </th>
-                    <th style="padding-top: 4px;"> Male </th>
-                    <th style="padding-top: 4px;"> Female </th>
-                    <th style="padding-top: 4px;"> Total </th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td> N. individuals </td>
-                    <td> {{ n_events_M }} ( {{n_events_M_per}}%)</td>
-                    <td> {{ n_events_F }} ( {{n_events_F_per}}%)</td>
-                    <td> {{ n_events_TOT }} </td>
-                </tr>
-                <tr>
-                    <td> N. individual with event after baseline </td>
-                    <td> {{ n_afterbs_M }} ( {{n_afterbs_M_per}}%) </td>
-                    <td> {{ n_afterbs_F }} ( {{n_afterbs_F_per}}%) </td>
-                    <td> {{ n_afterbs_TOT }} </td>
-                </tr>
-                <tr>
-                    <td> Prevalence (%) </td>
-                    <td > {{ prevalence_M }} </td>
-                    <td> {{ prevalence_F }} </td>
-                    <td> {{ prevalence_TOT }} </td>
-                </tr>
-                <tr>
-                    <td> Mean age at first event </td>
-                    <td> {{ meanage_M }} </td>
-                    <td> {{ meanage_F }} </td>
-                    <td> {{ meanage_TOT }} </td>
-                </tr>
-                 <tr>
-                    <td> Most common comorbidities (% and number of individuals) </td>
-                    <td width="138"> {{ com_comorb[0]["value"][0] }} </td>
-                    <td width="138"> {{ com_comorb[1]["value"][0] }} </td>
-                    <td width="138"> {{ com_comorb[2]["value"][0] }} </td>
-                </tr>
-            </tbody>
-        </table>
-    </div> 
-    
-    {% if mort_rate %}
     <div class="row">
-      <div class="col-md-4 col-xs-offset-1 col-md-offset-1">
-          <h3> 5-year mortality </h3>
+      <div class="col-md-8">
+        <h3 > Descriptive statistics  <img src="/static/images/blue_question_mark.png" height="13px" data-toggle="tooltip" title="These statistics consider only one event per individual (the first experienced in the registries timeframe)"/> </h3>
+          <table class="table">
+              <thead>
+                  <tr>
+                      <th style="padding-top: 4px;"> </th>
+                      <th style="padding-top: 4px;"> Male </th>
+                      <th style="padding-top: 4px;"> Female </th>
+                      <th style="padding-top: 4px;"> Total </th>
+                  </tr>
+              </thead>
+              <tbody>
+                  <tr>
+                      <td> N. individuals </td>
+                      <td> {{ n_events_M }} ( {{n_events_M_per}}%)</td>
+                      <td> {{ n_events_F }} ( {{n_events_F_per}}%)</td>
+                      <td> {{ n_events_TOT }} </td>
+                  </tr>
+                  <tr>
+                      <td> N. individual with event after baseline </td>
+                      <td> {{ n_afterbs_M }} ( {{n_afterbs_M_per}}%) </td>
+                      <td> {{ n_afterbs_F }} ( {{n_afterbs_F_per}}%) </td>
+                      <td> {{ n_afterbs_TOT }} </td>
+                  </tr>
+                  <tr>
+                      <td> Prevalence (%) </td>
+                      <td > {{ prevalence_M }} </td>
+                      <td> {{ prevalence_F }} </td>
+                      <td> {{ prevalence_TOT }} </td>
+                  </tr>
+                  <tr>
+                      <td> Mean age at first event </td>
+                      <td> {{ meanage_M }} </td>
+                      <td> {{ meanage_F }} </td>
+                      <td> {{ meanage_TOT }} </td>
+                  </tr>
+                  <tr>
+                      <td rowspan ="3" > Most common comorbidities (% and number of individuals) </td>
+                      <td>  {{ com_comorb[0]["value1"] }} </td>
+                      <td>  {{ com_comorb[1]["value1"] }} </td>
+                      <td>  {{ com_comorb[2]["value1"] }} </td>
+                  </tr>
+                      <td> {{ com_comorb[0]["value2"] }} </td>
+                      <td> {{ com_comorb[1]["value2"] }} </td>
+                      <td> {{ com_comorb[2]["value2"] }} </td>
+                  </tr>
+                  </tr>
+                      <td> {{ com_comorb[0]["value3"] }} </td>
+                      <td> {{ com_comorb[1]["value3"] }} </td>
+                      <td> {{ com_comorb[2]["value3"] }} </td>
+                  </tr>
+              </tbody>
+          </table>
+      </div> 
+    </div>
+    <div class="row">
+    {% if mort_rate %}
+      <div class="col-md-4">
+          <h3> 5-year mortality <img src="/static/images/blue_question_mark.png" height="13px" data-toggle="tooltip" title="It considers only events after baseline and it is calculated only if more than 10 deaths are observed"/></h3>
           <table class="table">
               <thead>
                   <tr>
@@ -688,27 +246,27 @@ $(document).ready(function() {
                   </tr>
                   <tr>
                       <td rowspan ="6" > Absolute Risk </td>
-                      <td>  Men - 40 y. </td>
+                      <td>  M - 40 y. </td>
                       <td>  {{mort_rate[0].abs_40_M }} </td>
                   </tr>
                   <tr>
-                      <td> Women - 40 y. </td>
+                      <td> F - 40 y. </td>
                       <td> {{mort_rate[0].abs_40_F }} </td>
                   </tr>
                   <tr>
-                      <td> Men - 50 y. </td>
+                      <td> M - 50 y. </td>
                       <td> {{mort_rate[0].abs_50_M }} </td>
                   </tr>
                   <tr>
-                      <td> Women - 50 y. </td>
+                      <td> F - 50 y. </td>
                       <td> {{mort_rate[0].abs_50_F }} </td>
                   </tr>
                   <tr>
-                      <td> Men - 60 y. </td>
+                      <td> M - 60 y. </td>
                       <td> {{mort_rate[0].abs_60_M }} </td>
                   </tr>
                   <tr>
-                      <td> Women - 60 y. </td>
+                      <td> F - 60 y. </td>
                       <td> {{mort_rate[0].abs_60_F }} </td>
                   </tr>
               </tbody>
@@ -716,8 +274,8 @@ $(document).ready(function() {
       </div> 
     {% endif %}
     {% if read_rate %}
-      <div class="col-md-4 col-xs-offset-1 col-md-offset-1">
-          <h3> 30-days in-patient readmission </h3>
+      <div class="col-md-4">
+          <h3> 30-days in-patient readmission <img src="/static/images/blue_question_mark.png" height="13px" data-toggle="tooltip" title="It considers in-patients co-morbid events that happened between 1 and 30 days after the main event, it is calculated only if more than 10 co-morbid events are observed"/></h3>
           <table class="table">
               <thead>
                   <tr>
@@ -733,28 +291,32 @@ $(document).ready(function() {
                   </tr>
                   <tr>
                       <td rowspan ="6" > Probability </td>
-                      <td>  Men - 40 y. </td>
+                      <td>  M - 40 y. </td>
                       <td>  {{read_rate[0].abs_40_M }} </td>
                   </tr>
                   <tr>
-                      <td> Women - 40 y. </td>
+                      <td> F - 40 y. </td>
                       <td> {{read_rate[0].abs_40_F }} </td>
                   </tr>
                   <tr>
-                      <td> Men - 50 y. </td>
+                      <td> M - 50 y. </td>
                       <td> {{read_rate[0].abs_50_M }} </td>
                   </tr>
                   <tr>
-                      <td> Women - 50 y. </td>
+                      <td> F - 50 y. </td>
                       <td> {{read_rate[0].abs_50_F }} </td>
                   </tr>
                   <tr>
-                      <td> Men - 60 y. </td>
+                      <td> M - 60 y. </td>
                       <td> {{read_rate[0].abs_60_M }} </td>
                   </tr>
                   <tr>
-                      <td> Women - 60 y. </td>
-                      <td> {{read_rate[0].abs_60_F }} </td>
+                      <td> F - 60 y. </td>
+                      <td > {{read_rate[0].abs_60_F }} </td>
+                  </tr>
+                  <tr>
+                      <td width="130"> % Readmitted with adverse drug reaction </td>
+                      <td colspan="2"  style="text-align:center;"> {{read_rate[0].ndrugad_p}} </td>
                   </tr>
               </tbody>
           </table>
@@ -762,8 +324,66 @@ $(document).ready(function() {
     {% endif %}
     </div>
     <hr/>
+
     <div class="row">
-      <div class="col-md-5  col-xs-offset-1 col-md-offset-1">
+      <h3> Risk factors <img src="/static/images/blue_question_mark.png" height="13px" data-toggle="tooltip" title="In blue: Distribution of risk factors in all UKBB. Red line: mean (solid) and standard errors (dashed) for individuals with ICD code"/></h3>
+ <!--      <div class="col-md-4">
+       <select class="form-control">
+        <option id="BMI">Body Mass Index</option>
+        <option id="SBP">Systolic Blood Pressure</option>
+        <option id="SMOKE">Smoking</option>
+       </select>
+      </div> -->
+
+
+      <h4> Body Mass Index </h4>
+      {% if indsex=="M" or indsex=="MF" %}
+      <div class="col-md-4">
+          <h5> Male </h5>
+            <svg style="width: 350; height:200" id="bin_chart1"/>
+        </div>
+      {% endif %}
+      {% if indsex=="F" or indsex=="MF" %}
+        <div class="col-md-4">
+            <h5> Female </h5>
+            <svg style="width: 350; height:200" id="bin_chart2"/>
+        </div>
+      {% endif %}
+    </div>
+    <div class="row">
+      <h4> Systolic Blood Pressure </h4>
+      {% if indsex=="M" or indsex=="MF" %}
+        <div class="col-md-4">
+            <h5> Male </h5>
+            <svg style="width: 350; height:200" id="bin_chart3"/>
+        </div>
+      {% endif %}
+      {% if indsex=="F" or indsex=="MF" %}
+        <div class="col-md-4">
+            <h5> Female </h5>
+            <svg style="width: 350; height:200" id="bin_chart4"/>
+        </div>
+      {% endif %}
+    </div>
+    <div class="row">
+      <h4> Smoking </h4>
+      {% if indsex=="M" or indsex=="MF" %}
+        <div class="col-md-4">
+            <h5> Male </h5>
+            <svg style="width: 350; height:200" id="smoke_chart1"/>
+        </div>
+      {% endif %}
+      {% if indsex=="F" or indsex=="MF" %}
+        <div class="col-md-4">
+            <h5> Female </h5>
+            <svg style="width: 350; height:200" id="smoke_chart2"/>
+        </div>
+      {% endif %}
+    </div>
+    <hr/>
+
+    <div class="row">
+      <div class="col-md-5">
           <h3>Report</h3>
           <div class="card">
               <div class="card-block">
@@ -774,41 +394,32 @@ $(document).ready(function() {
           <hr/>
       </div>
       <div class="col-md-5  col-xs-offset-1 col-md-offset-1">
-          <h3>Map</h3>
-              <svg style="width: 200; height:400" class="hidden-xs" id="svg_map_chart"/>
+          <h3>Map <img src="/static/images/blue_question_mark.png" height="13px" data-toggle="tooltip" title="Shows the number of events in regions where UK Biobank assessment centers were recruiting partecipants"/></h3>
+              <svg style="width: 200; height:400" id="svg_map_chart"/>
       </div>
     </div>
+    {% if res_mod or res_mod_after %}
     <div class="row">
-        <div class="col-md-10 col-xs-offset-1 col-md-offset-1">
-            <h3>Hazard Ratio Summary</h3>
+        <div class="col-md-7">
+            <h3>Association with other diseases <img src="/static/images/blue_question_mark.png" height="13px" data-toggle="tooltip" title="Calculated if the co-morbid events are observed in > 10 individuals. We used time-varying covariate survival analysis."/></h3>
             <br>
-            <div class="row col-md-10 col-md-offset-0">
-                <span class="hidden-xs">
+            <div class="row">
+                <span>
                     <label for="hist_buttons">
-                        Dispaly:
+                        Display:
                     </label>
 
                     <span class="btn-group" data-toggle="buttons" id="hist_buttons">
 
 
                         <button class="btn btn-primary active hist_buttons"
-                              id="8-999999999999" data-tooltip="Includes all comorbidities">
+                              id="8-999999999999" data-toggle="tooltip" title="Includes all comorbidities">
                           <input type="radio">All</input>
                         </button>
 
                         <button class="btn btn-primary hist_buttons"
-                              id="8-30" data-tooltip="Comorbidities between 8 and 30 days">
-                          <input type="radio">8-30 days</input>
-                        </button>
-
-                        <button class="btn btn-primary hist_buttons"
-                              id="30-90" data-tooltip="Comorbidities between 31 and 90 days">
-                          <input type="radio">31-90 days</input>
-                        </button>
-
-                        <button class="btn btn-primary hist_buttons"
-                              id="90-365" data-tooltip="Comorbidities between 91 and 365 days">
-                          <input type="radio">91-365 days</input>
+                              id="8-180" data-toggle="tooltip" title="Comorbidities between 8 days and 6 months">
+                          <input type="radio"> Short-term </input>
                         </button>
 
                     </span>
@@ -818,25 +429,46 @@ $(document).ready(function() {
                 <h4>ICD codes (N>10) observed before {{ code }} </h4>
                 <br
                 <span style="overflow-x: scroll; display: inline-block">
-                    <svg style="width: 800; height:300" class="hidden-xs" id="svg_hist_chart"/>
+                    <svg style="width: 600; height:300" id="svg_hist_chart"/>
                 </span>
                 <br>
                 <h4>ICD codes (N>10) observed after {{ code }} </h4>
                 <br>
                 <span style="overflow-x: scroll; display: inline-block">
-                    <svg style="width: 800; height:300" class="hidden-xs" id="svg_hist_chart_after"/>
+                    <svg style="width: 600; height:300" id="svg_hist_chart_after"/>
                 </span>
             </div> 
         </div>
     </div>
+    {% endif %}
+    {% if incidence %}
     <div class="row">
-        <div class="col-md-10 col-md-offset-1">
-            <h3>Time trend</h3>
+        <div class="col-md-7">
+          <h3>Time trend</h3>
+          <br>
+          <span>
+                  <label for="timetrend_buttons">
+                      Dispaly:
+                  </label>
+                  <span class="btn-group" data-toggle="buttons" id="timetrend_buttons">
+                      <button class="btn btn-primary active timetrend_buttons"
+                            id="incidence" data-toggle="tooltip" title="Number of unique events for a year / total number of individuals alive at the beginning of the year">
+                        <input type="radio">Incidence</input>
+                      </button>
+
+                      <button class="btn btn-primary timetrend_buttons"
+                            id="n_events" data-toggle="tooltip" title="Number of unique events for a year">
+                        <input type="radio"> N. events </input>
+                      </button>
+                  </span>
+            </span> 
+            <br>
+            <br>
             <span style="overflow-x: scroll; display: inline-block">
-                <svg style="width: 800; height:300" class="hidden-xs" id="svg_time_chart"/>
-            </span>
+                <svg style="width: 600; height:300"  id="svg_time_chart"/>
         </div>
     </div>
+    {% endif %}
 
 </div>
 

@@ -1,0 +1,62 @@
+### MAKE THE DOCKER ###
+
+docker build -t gcr.io/ukbb-gay-was/risteys-app:v5 .
+
+gcloud docker -- push gcr.io/ukbb-gay-was/risteys-app:v5
+
+
+### BASIC PIPELINE ####
+
+gcloud container clusters create risteys-cl --num-nodes=2 --zone=us-central1-f
+
+kubectl apply -f config.yaml
+
+kubectl expose deployment risteys-serve --type=LoadBalancer --port 80 --load-balancer-ip='35.184.133.64'
+
+
+### UPDATES ###
+
+kubectl set image deployment risteys-serve risteys-serve=gcr.io/ukbb-gay-was/risteys-app:v6
+
+### Check rollout ###
+
+kubectl rollout status deployment risteys-serve
+
+### TO SCALE ####
+
+kubectl scale deployment risteys-serve --replicas=4
+
+
+### RELETED CODE FOR AUTHENTICATION ####
+
+
+gcloud config set project ukbb-gay-was
+
+gcloud auth activate-service-account ukbb-gay-was@appspot.gserviceaccount.com --key-file /Users/andreaganna/UKBB_GAY_WAS_f3b1ec5d057c.json --project ukbb-gay-was
+
+export PROJECT_ID="$(gcloud config get-value project -q)"
+
+export GOOGLE_APPLICATION_CREDENTIALS="/Users/andreaganna/UKBB_GAY_WAS_f3b1ec5d057c.json"
+
+gcloud container clusters get-credentials risteys-cl 
+
+
+
+### TO RUN INTERACTICE DASHBOARD ###
+
+kubectl proxy
+
+
+### TO KILL THE APP ###
+
+
+kubectl delete service risteys-serve
+gcloud container clusters delete risteys
+
+docker kill $(docker ps -q)
+docker rm $(docker ps -a -q)
+docker rmi $(docker images -q)
+
+kubectl get services
+kubectl get pods
+

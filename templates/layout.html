@@ -1,20 +1,18 @@
 <!doctype html>
 <head>
-    <title>ICD browser</title>
+    <title>RiSTEYS</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='typeaheadjs.css') }}">
     <script type="text/javascript" src="{{ url_for('static', filename='jquery-1.11.1.min.js') }}"></script>
     {% block loads %}{% endblock %}
     <script type="text/javascript" src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='jquery.tablesorter.min.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='jquery.tablesorter.pager.js') }}"></script>
-    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='theme.default.css') }}"> <!--tablesorter's css-->
     <script type="text/javascript" src="{{ url_for('static', filename='underscore-min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='bootstrap-select.js') }}"></script>
     <link rel=stylesheet type=text/css href="{{ url_for('static', filename='bootstrap.min.css') }}">
     <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
     <script type="text/javascript" src="http://d3js.org/d3.v4.js"> </script>
     <script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='index.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='risteys.js') }}"></script>
 
 
 </head>
@@ -23,25 +21,31 @@
 <nav class="navbar navbar-default" role="navigation" style="background: #222;">
     <div class="container-fluid">
         <div class="navbar-header">
-            <button type="button" class="navbar-toggle pull-right" href="/" data-toggle="collapse" data-target="#navbar-collapse">
+            <button type="button" class="navbar-toggle pull-right" data-toggle="collapse" data-target="#navbar-collapse">
                 <span class="sr-only">Toggle navigation</span>
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" style="font-size:20px; color:#ffffff; font-weight:bold;"> ICD explorer</a>
+            <a class="navbar-brand" href="/"  style="font-size:20px; color:#ffffff; font-weight:bold;">RiSTEYS</a>
             <div class="col-xs-5" id="navbar_form_container">
                 <form action="/awesome" class="navbar-form" role="search">
                     <div class="form-group" id="navbar-awesomebar">
                         <input type="submit" style="display: none;"/>
-                        <input id="navbar-searchbox-input" name="query" class="form-control awesomebar" type="text" placeholder="ICD code"/>
+                        <input id="navbar-searchbox-input" name="query" class="form-control awesomebar" type="text" placeholder="Search ICD-10 code"/>
                         <input type="submit" style="position: absolute; left: -9999px"/>
                     </div>
                 </form>
             </div>
         </div>
-     </div><!-- /.container-fluid -->
+        <div class="collapse navbar-collapse" id="navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li><a href="/methods" style="font-size:18px; color: white; font-weight: bold;">| Methods</a></li>
+                <li><a href="/acknowledgements" style="font-size:18px; color: white; font-weight: bold;">| Acknowledgements</a></li>
+            </ul>
+        </div>
+    </div>
 </nav>
-</div>
+
 {% block body %}{% endblock %}
 </body>

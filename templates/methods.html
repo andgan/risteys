@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+{% block body %}
+    <div class="container">
+        <h1>Methods</h1>
+        <div class="row" style="font-size: 16px;">
+            <h4> Defintion of ICD codes in the analysis </h4>
+            <p>
+                We obtained ICD codes from the hospital inpatient registry. We used only ICD-10 codes between 1st of January 1998 and 1st of March 2015. We excluded ICD codes starting with "V","W","X","Y","Z","U" because not disease related. ICD codes without the admission date were excluded. Only the primary ICD code for each hospital admission was considered.
+            </p>
+            <h4> Descriptive statistics </h4>
+            <p>
+                Descriptive statistics referred to the first (oldest) ICD code experienced by each individual. In other words, if an individual has been experiencing the same ICD code three times, he/she is counted once and the only the first event is considered. We also considered the number of events after baseline (recruitment). In this case, all the events before baseline are discarded.
+            </p>
+            <h4> 5-year mortality </h4>
+            <p>
+                We used a time-varying covariate Cox model. The exposure is the ICD code of interest and the outcome is death. The inclusion of the ICD code as time-varying covariate allows individuals to be at risk only after experiencing the ICD code. End of follow-up is: death or 1st March 2015. The model is adjusted for age and sex. We considered only ICD codes reported after baseline (since no one can be death before baseline). The absolute risks at 5-years were obtained from the Cox model using the <i>survfit</i> function in R. Results were reported only if more than 10 deaths were observed.
+            </p>
+            <h4> 30-days in-patient readmission </h4>
+            <p>
+                Among people with the ICD code of interest, we evaluated the probability to be readmitted to the hospital defined as being hospitalized for any ICD code at least 1 day and less than 30 days after discharge for the ICD code of interest. The probabilities are obtained from the logistic regression. ICD codes for adverse drug reactions are obtained from: <a href=" https://www.ncbi.nlm.nih.gov/pubmed/24222671" > this paper </a>. Adverse drug reactions are often not reported as ICD codes, so this is an underestimation of the true number of adverse drug reaction events. Results were reported only if a readmission event was observed in at least 10 individuals.
+            </p>
+            <h4> Association with other diseases </h4>
+            <p>
+                Among people with the ICD code of interest, we considered all the other ICD codes (comorbid ICD codes) experienced at least 8 days after and at least 8 days before.  We considered only comorbid ICD codes that were observed in more than 10 individuals. We run analysis separately for "Before" and "After". 1) Before model: We fit a time-varying covariate Cox model for each comorbid ICD codes where the outcome is the ICD code of interest and the exposure is the comorbid ICD code. 2) After model: We fit a time-varying covariate Cox model for each comorbid ICD codes where the outcome is comorbid ICD code and the exposure is the ICD code of interest. Models were adjusted for age and sex.
+            </p>
+            <h4> Time trends </h4>
+            <p>
+                In this analysis, we considered the number of events per year. For each individual, we counted a single event per year, but the same individual might experience more than one event across years. The per-year incidence here can be better described as <i> incidence proportion </i>, that is the ratio between the number of events experienced during the year and the total number of individuals alive at the beginning of the year.
+            </p>
+        </div>
+    </div>
+
+{% endblock %}

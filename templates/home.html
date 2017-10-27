@@ -4,13 +4,13 @@
         $('#navbar_form_container').hide();
     </script>
     <div class="container">
-        <h1 id="home-title"> ICD searching tool </h1>
+        <h1 id="home-title"> ICD explorer for UK Biobank data - preAlpha </h1>
         <div class="row">
             <div class="col-md-12">
                 <div id="home-searchbox">
                     <form action="/awesome">
                         <input type="submit" style="display: none;"/>
-                        <input id="home-searchbox-input" name="query" class="form-control input-lg awesomebar" type="text" placeholder="Search for an ICD code"/>
+                        <input id="home-searchbox-input" name="query" class="form-control input-lg awesomebar" type="text" placeholder="Search for a 3-digit ICD-10 code"/>
                         <input type="submit" style="position: absolute; left: -9999px"/>
                     </form>
                     <p class="text-muted">
@@ -20,6 +20,11 @@
                         The total number of individuals in the dataset is: {{number_all_indiv}}
                     </p>
                 </div>
+            </div>
+        </div>
+        <div class="row" style="font-size:20px;">
+            <div class="col-md-12">
+                Search for an ICD code using the bar above, you can get information about associations with other ICD codes, mortality, the probability of hospital readmission and much more. The browser is in testing phase, so be cautious about using the results from this analysis.
             </div>
         </div>
     </div>

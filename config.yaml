@@ -1,0 +1,29 @@
+---
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: risteys-serve
+  labels:
+    state: serving
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      name: risteys-app
+  template:
+    metadata:
+      labels:
+        name: risteys-app
+    spec:
+      containers:
+      - name: risteys-serve
+        image: gcr.io/ukbb-gay-was/risteys-app:v4
+        env:
+        - name: DEPLOYMENT_ENV
+          value: production
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        imagePullPolicy: Always
+      restartPolicy: Always
+      dnsPolicy: ClusterFirst

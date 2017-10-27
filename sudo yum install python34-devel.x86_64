@@ -1,7 +1,0 @@
-sudo yum install python34-devel.x86_64
-curl https://bootstrap.pypa.io/get-pip.py | sudo python3
-sudo pip install gunicorn
-sudo gunicorn -w 4 test:app -b 0.0.0.0:80
-## Install mongoDB follwing instructions here: https://docs.mongodb.com/master/tutorial/install-mongodb-on-red-hat/ ###
-
-
