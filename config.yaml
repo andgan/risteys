@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: risteys-serve
-        image: gcr.io/ukbb-gay-was/risteys-app:v4
+        image: gcr.io/ukbb-gay-was/risteys-app:v0.1
         env:
         - name: DEPLOYMENT_ENV
           value: production
