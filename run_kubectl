@@ -1,8 +1,8 @@
 ### MAKE THE DOCKER ###
 
-docker build -t gcr.io/ukbb-gay-was/risteys-app:v0.1 .
+docker build -t gcr.io/ukbb-gay-was/risteys-app .
 
-gcloud docker -- push gcr.io/ukbb-gay-was/risteys-app:v0.1
+gcloud docker -- push gcr.io/ukbb-gay-was/risteys-app
 
 
 ### BASIC PIPELINE ####
@@ -16,7 +16,9 @@ kubectl expose deployment risteys-serve --type=LoadBalancer --port 80 --load-bal
 
 ### UPDATES ###
 
-kubectl set image deployment risteys-serve risteys-serve=gcr.io/ukbb-gay-was/risteys-app:v0.1
+kubectl delete -f config.yaml
+kubectl create -f config.yaml
+
 
 ### Check rollout ###
 
